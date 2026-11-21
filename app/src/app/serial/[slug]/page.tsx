@@ -107,7 +107,7 @@ export default async function ShowPage({ params }: { params: Params }) {
         {s.creators.length > 0 && <p className="muted">Tvorcovia: {s.creators.join(", ")}</p>}
       </div>
 
-      <div className="tile stat">
+      <div className="tile rate">
         <span className="lbl">Kukátko</span>
         <span className="rv">{userPct != null ? `${userPct}%` : "–"}</span>
         <span className="rs">{s.user_count} {plural(s.user_count, "hodnotenie", "hodnotenia", "hodnotení")}{userPct == null ? " (ukáže sa od 5)" : ""}</span>
