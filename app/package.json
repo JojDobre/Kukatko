@@ -1,0 +1,36 @@
+{
+  "name": "kukatko",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "worker": "tsx worker/index.ts",
+    "sync": "tsx worker/cli.ts sync",
+    "sync:hourly": "tsx worker/cli.ts hourly",
+    "notify": "tsx worker/cli.ts notify",
+    "migrate": "tsx worker/cli.ts migrate",
+    "seed:demo": "tsx worker/cli.ts seed-demo",
+    "vapid": "tsx worker/cli.ts vapid",
+    "test": "tsx --test worker/*.test.ts"
+  },
+  "dependencies": {
+    "next": "^16.4.5",
+    "node-cron": "^4.2.1",
+    "postgres": "^3.4.7",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsx": "^4.20.5",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/web-push": "^3.6.4",
+    "typescript": "^5.9.2"
+  }
+}
