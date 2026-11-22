@@ -1,6 +1,8 @@
-# Kukátko na VPS: databáza + web + robot + zálohy + HTTPS (Caddy).
+# Kukátko na VPS: databáza + web + robot + zálohy (+ voliteľne HTTPS cez Caddy a štatistiky Umami).
 # Spustenie: docker compose up -d --build
-# So štatistikami návštevnosti (Umami): docker compose --profile analytics up -d --build
+# Voliteľné časti zapneš v .env premennou COMPOSE_PROFILES:
+#   caddy      = vlastný Caddy na portoch 80/443 (len ak na VPS ešte nebeží iný web server)
+#   analytics  = štatistiky návštevnosti Umami
 name: kukatko
 
 x-db-url: &dburl postgres://${POSTGRES_USER:-kukatko}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-kukatko}
@@ -20,15 +22,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
-    # Databáza je dostupná len zo samotného VPS, nie z internetu.
-    # Z vlastného PC sa pripojíš cez SSH tunel: ssh -L 5432:127.0.0.1:5432 user@vps
+    # Databáza je dostupná len zo samotného VPS, nie z internetu (port 5433, aby nekolidovala s inou databázou).
+    # Z vlastného PC sa pripojíš cez SSH tunel: ssh -L 5433:127.0.0.1:5433 user@vps
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${DB_PORT:-5433}:5432"
 
   web:
     build: { context: ./app, target: web }
     restart: unless-stopped
     env_file: .env
+    # Web počúva len na VPS (127.0.0.1). Z internetu ho sprístupní Caddy alebo tvoj existujúci nginx.
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3010}:3000"
     environment:
       DATABASE_URL: *dburl
     depends_on:
@@ -64,6 +69,7 @@ services:
       db: { condition: service_healthy }
 
   caddy:
+    profiles: ["caddy"]
     image: caddy:2.10-alpine
     restart: unless-stopped
     ports: ["80:80", "443:443", "443:443/udp"]

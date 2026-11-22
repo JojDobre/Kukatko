@@ -98,6 +98,30 @@ Kľúče pre push upozornenia vygeneruješ a vložíš do `.env`:
 docker compose run --rm --no-deps worker node node_modules/tsx/dist/cli.mjs worker/cli.ts vapid
 ```
 
+### 3b. VPS, na ktorom už bežia iné projekty
+
+Kukátko beží v samostatných kontajneroch (názvy začínajú `kukatko-`) a s vlastnou databázou, takže sa s inými projektmi nebije. Treba len vyriešiť, kto bude obsluhovať porty 80 a 443:
+
+- **Na VPS ešte nebeží web server:** nechaj v `.env` `COMPOSE_PROFILES=caddy`. Kukátko si spustí Caddy a samo vybaví HTTPS.
+- **Už máš nginx, Caddy alebo Traefik:** nastav `COMPOSE_PROFILES=` (prázdne). Web bude počúvať len na `127.0.0.1:3010` (zmeníš cez `WEB_PORT`) a v tvojom web serveri pridáš doménu, ktorá naň presmeruje. Ukážka pre nginx:
+
+  ```nginx
+  server {
+      server_name kukatko.sk www.kukatko.sk;
+      location / {
+          proxy_pass http://127.0.0.1:3010;
+          proxy_http_version 1.1;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $remote_addr;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+  ```
+
+  HTTPS potom vybavíš cez `certbot --nginx -d kukatko.sk -d www.kukatko.sk`. Hlavička `X-Forwarded-For` musí obsahovať skutočnú IP návštevníka, inak nebude správne fungovať obmedzenie počtu požiadaviek.
+
+Databáza počúva len na VPS na porte `5433` (zmeníš cez `DB_PORT`), aby nekolidovala s inou databázou.
+
 ### 4. Spustenie
 
 ```bash
