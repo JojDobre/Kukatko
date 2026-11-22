@@ -14,16 +14,23 @@ type Props = {
   region: string;
   genres: { id: number; name: string; count: number }[];
   genre: number | null;
+  languages: { code: string; count: number }[];
+  extra: { decade: number | null; runtime: string | null; language: string | null; minScore: number | null };
 };
 
-export default function Filters({ kind, sort, sorts, providers, selected, region, genres, genre }: Props) {
+const DECADES = [2020, 2010, 2000, 1990, 1980, 1970];
+
+export default function Filters({ kind, sort, sorts, providers, selected, region, genres, genre, languages, extra }: Props) {
   const [open, setOpen] = useState<string | null>(null);
   const [plats, setPlats] = useState<number[]>(selected);
   const [, start] = useTransition();
   const router = useRouter();
   const params = useSearchParams();
   const box = useRef<HTMLDivElement>(null);
-  const { d, href, fmt } = useI18n();
+  const { d, href, fmt, lang } = useI18n();
+  const f = d.filters;
+  const langName = (code: string) => { try { return new Intl.DisplayNames([lang], { type: "language" }).of(code) ?? code; } catch { return code; } };
+  const active = [genre, extra.decade, extra.runtime, extra.language, extra.minScore].filter(Boolean).length;
 
   useEffect(() => setPlats(selected), [selected.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -45,6 +52,8 @@ export default function Filters({ kind, sort, sorts, providers, selected, region
     setPlats(next);
     // Výber platforiem si pamätáme v cookie (pre každý región zvlášť), platí aj pre domovskú stránku.
     document.cookie = `plats_${region}=${next.join(".")}; path=/; max-age=31536000; samesite=lax`;
+    // Uložíme ich aj na server (upozornenia „Chcem vidieť“, „Pozerajte spolu“).
+    fetch("/api/platforms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ region, ids: next }) }).catch(() => {});
     start(() => router.refresh());
   }
 
@@ -66,8 +75,8 @@ export default function Filters({ kind, sort, sorts, providers, selected, region
   return (
     <div className="filters" ref={box}>
       <div className="seg" role="group" aria-label={`${d.common.tvs} / ${d.common.movies}`}>
-        <button aria-pressed={kind === "tv"} onClick={() => go({ kind: null, genre: null, sort: sort === "next" ? null : params.get("sort") })}>{d.common.tvs}</button>
-        <button aria-pressed={kind === "movie"} onClick={() => go({ kind: "movie", genre: null, sort: sort === "next" ? null : params.get("sort") })}>{d.common.movies}</button>
+        <button aria-pressed={kind === "tv"} onClick={() => go({ kind: null, genre: null, runtime: null, lang: null, sort: sort === "next" ? null : params.get("sort") })}>{d.common.tvs}</button>
+        <button aria-pressed={kind === "movie"} onClick={() => go({ kind: "movie", genre: null, runtime: null, lang: null, sort: sort === "next" ? null : params.get("sort") })}>{d.common.movies}</button>
       </div>
       {dd("sort", d.catalog.sort, sortLabel(sort), sorts.map((k) =>
         item(k, k === sort, sortLabel(k), () => { setOpen(null); go({ sort: k === "score" ? null : k }); })))}
@@ -82,6 +91,23 @@ export default function Filters({ kind, sort, sorts, providers, selected, region
         {genres.map((g) => item(String(g.id), g.id === genre, <>{g.name}<span className="cnt">{g.count}</span></>,
           () => { setOpen(null); go({ genre: String(g.id) }); }))}
       </>)}
+      {dd("year", f.year, extra.decade ? (extra.decade < 1980 ? f.older : `${extra.decade}+`) : f.any, <>
+        {item("", !extra.decade, f.any, () => { setOpen(null); go({ year: null }); })}
+        {DECADES.map((y) => item(String(y), extra.decade === y, y === 1970 ? `< 1980 (${f.older})` : `${y} – ${y + 9}`, () => { setOpen(null); go({ year: String(y === 1970 ? 1970 : y) }); }))}
+      </>)}
+      {dd("runtime", f.runtime, extra.runtime ? (kind === "movie" ? f.runtimeMovie : f.runtimeTv)[extra.runtime as "short"] : f.any, <>
+        {item("", !extra.runtime, f.any, () => { setOpen(null); go({ runtime: null }); })}
+        {(["short", "medium", "long"] as const).map((r) => item(r, extra.runtime === r, (kind === "movie" ? f.runtimeMovie : f.runtimeTv)[r], () => { setOpen(null); go({ runtime: r }); }))}
+      </>)}
+      {dd("score", f.score, extra.minScore ? fmt(f.scoreMin, { n: extra.minScore }) : f.any, <>
+        {item("", !extra.minScore, f.any, () => { setOpen(null); go({ score: null }); })}
+        {[60, 70, 80, 90].map((n) => item(String(n), extra.minScore === n, fmt(f.scoreMin, { n }), () => { setOpen(null); go({ score: String(n) }); }))}
+      </>)}
+      {languages.length > 1 && dd("lang", f.language, extra.language ? langName(extra.language) : f.any, <>
+        {item("", !extra.language, f.any, () => { setOpen(null); go({ lang: null }); })}
+        {languages.map((l) => item(l.code, extra.language === l.code, <>{langName(l.code)}<span className="cnt">{l.count}</span></>, () => { setOpen(null); go({ lang: l.code }); }))}
+      </>)}
+      {active > 0 && <button className="ddb reset" onClick={() => go({ genre: null, year: null, runtime: null, score: null, lang: null })}>{f.reset}</button>}
     </div>
   );
 }

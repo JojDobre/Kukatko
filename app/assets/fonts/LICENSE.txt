@@ -1,0 +1,2 @@
+Onest (https://fonts.google.com/specimen/Onest) je licencované pod SIL Open Font License 1.1.
+Súbory pochádzajú z balíka @fontsource/onest. Používajú sa na generovanie obrázkov na zdieľanie.

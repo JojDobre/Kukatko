@@ -131,6 +131,65 @@ const hu: Dict = {
     removedTitle: "{name}: lekerült innen: {p}", removedBody: "Már nem érhető el itt: {p}.", removedElsewhere: "Most itt találod: {others}.",
     reminderTitle: "Holnap: {name}", reminderBody: "A(z) {ep} holnap jelenik meg.",
   },
+  platform: {
+    metaTitle: "{p}: újdonságok, távozók és a legjobb címek", metaDesc: "Mi az újdonság itt: {p}, mi került le róla, és a legjobb sorozatok és filmek. Naponta frissítve.",
+    inCatalog: "cím a katalógusban", newHere: "Újdonságok a szolgáltatáson", leaving: "Lekerült a szolgáltatásról", upcoming: "Új epizódok ezen a héten",
+    all: "Összes szolgáltatás", allIntro: "Válassz szolgáltatást, és megnézheted, mi új és mit érdemes megnézni.",
+  },
+  similar: {
+    titleTv: "A(z) {name} sorozathoz hasonlók", titleMovie: "A(z) {name} filmhez hasonlók",
+    metaDesc: "Ha tetszett a(z) {name}, nézd meg ezeket is. Azzal együtt, hol nézhetők.", more: "Még több hasonló", back: "Vissza: {name}",
+  },
+  calendar: {
+    title: "Megjelenési naptár", metaDesc: "Mikor jelennek meg a sorozatok új epizódjai a Netflixen, a Max-on, a Disney+-on és máshol. Az egész hónap egy helyen.",
+    prev: "Előző hónap", next: "Következő hónap", empty: "Ebben a hónapban még nincs semmi beütemezve.", premiere: "premier", onlyMine: "Csak a követettek", all: "Minden",
+  },
+  pick: {
+    title: "Mit nézzek ma?", metaDesc: "Válaszolj három kérdésre, és választunk egy sorozatot vagy filmet ma estére a szolgáltatásaidról.",
+    mood: "Mihez van kedved?", kind: "Film vagy sorozat?", either: "Mindegy", time: "Mennyi időd van?",
+    moods: { relax: "Kikapcsolódás és nevetés", tense: "Feszültség", think: "Elgondolkodtató", action: "Akció és kaland", romance: "Romantika", scary: "Ijesztő", family: "Családdal", surprise: "Lepj meg" },
+    times: { short: "Egy órán belül", medium: "Két órán belül", long: "Egész estém van" },
+    result: "Ajánlataink neked", again: "Más ajánlatok", restart: "Újrakezdés", none: "Nem találtunk megfelelőt. Próbálj más hangulatot, vagy töröld a szolgáltatásszűrőt.",
+    onPlatforms: "Csak a szolgáltatásaidon keresünk.", anyPlatform: "Minden szolgáltatáson keresünk. A sajátjaidat a katalógusban választhatod ki.", cta: "Ajánlatok mutatása",
+  },
+  want: {
+    add: "Meg akarom nézni", added: "Hozzáadva: Meg akarom nézni", on: "A Meg akarom nézni listán", removed: "Eltávolítva: Meg akarom nézni",
+    list: "Meg akarom nézni", empty: "A lista üres. Adj hozzá címeket a Meg akarom nézni gombbal.", hint: "Szólunk, ha felkerülnek a szolgáltatásaidra.",
+  },
+  hidden: { hide: "Nem érdekel", done: "Elrejtve. Többé nem ajánljuk.", undo: "Visszavonás", list: "Elrejtett címek", none: "Semmi sincs elrejtve." },
+  stats: {
+    title: "Statisztikáim", hours: "óra nézés", episodes: "epizód", movies: "film", rated: "értékelés",
+    topGenres: "Kedvenc műfajok", topRated: "Legjobbra értékelt", byMonth: "Megnézve hónapok szerint",
+    recap: "Az én {year}-em", recapTitle: "Az én {year}-em itt: {site}", share: "Kép megosztása", empty: "Még nincs itt semmi. Pipáld ki a megnézett epizódokat és filmeket, és értékelj címeket.",
+    markMovie: "Láttam", markedMovie: "Megnézve",
+  },
+  together: {
+    title: "Nézzétek együtt", intro: "Küldj egy linket egy barátodnak. Olyan címeket keresünk, amelyeket egyikőtök sem látott, a meglévő szolgáltatásaitokon.",
+    create: "Link létrehozása", link: "Link a barátodnak", valid: "7 napig érvényes.", waiting: "Várjuk, hogy a barátod megnyissa a linket.",
+    matches: "Ajánlatok kettőtöknek", bothWant: "Mindketten meg akarjátok nézni", oneWants: "Egyikőtök meg akarja nézni", none: "Nem találtunk közös ajánlatot. Előbb adjatok hozzá címeket a Meg akarom nézni listához.",
+    invalid: "A link érvénytelen vagy lejárt.", copy: "Másolás", copied: "Kimásolva", share: "Megosztás",
+  },
+  importer: {
+    title: "Importálás más szolgáltatásokból", intro: "Tölts fel egy fájlt az IMDb-ről, a Letterboxdról vagy a Traktról. Átvisszük az értékeléseket, a listádat és a megnézett filmeket.",
+    choose: "Fájl kiválasztása", howto: "Hol találom a fájlt?",
+    howImdb: "IMDb: Értékelések vagy Watchlist → három pont → Exportálás (CSV-fájl).",
+    howLb: "Letterboxd: Settings → Import & Export → Export your data. A ZIP-ből töltsd fel a ratings.csv, watchlist.csv vagy watched.csv fájlt.",
+    howTrakt: "Trakt: Settings → Data → Export. Töltsd fel az értékeléseket vagy a watchlistet tartalmazó JSON-fájlt.",
+    working: "Importálás…", done: "Kész: {r} értékelés, {w} a listára, {s} megnézett, {u} párosítatlan.",
+    later: "A még hiányzó címeket néhány percen belül a háttérben pótoljuk.",
+    error: "Nem sikerült beolvasni a fájlt. Ellenőrizd, hogy IMDb-, Letterboxd- vagy Trakt-export-e.",
+  },
+  ical: {
+    title: "Naptár a telefonon", intro: "A követett sorozatok megjelenései megjelennek a naptáradban, és maguktól frissülnek.",
+    google: "Hozzáadás a Google Naptárhoz", apple: "Hozzáadás az Apple Naptárhoz", copy: "Link másolása", note: "A link privát, ne küldd el senkinek.",
+  },
+  filters: {
+    year: "Év", runtime: "Hossz", language: "Eredeti nyelv", score: "Értékelés", scoreMin: "legalább {n}%", any: "Bármilyen", older: "régebbi", reset: "Szűrők törlése",
+    runtimeMovie: { short: "90 perc alatt", medium: "90–120 perc", long: "120 perc felett" },
+    runtimeTv: { short: "epizódok 30 perc alatt", medium: "epizódok 30–60 perc", long: "epizódok 60 perc felett" },
+  },
+  promo: { label: "Hirdetés" },
+  more: { pick: "Mit ma?", calendar: "Naptár", platforms: "Szolgáltatások", stats: "Statisztikáim", together: "Nézzétek együtt" },
 };
 
 export default hu;

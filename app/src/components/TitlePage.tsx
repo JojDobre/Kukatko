@@ -3,6 +3,8 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { deviceId, isPremium } from "@/lib/device";
 import { followedIds, genreNames, getTitle, myRating, similar, texts, type TitleFull } from "@/lib/queries";
 import { episodesFor, reviewsFor } from "@/lib/extra";
+import { idSet, movieSeen } from "@/lib/features";
+import TitleActions from "./TitleActions";
 import { daysUntil, epCode, fmtDate, img, rel, todayISO, tone } from "@/lib/format";
 import { dict, fmt, plural } from "@/lib/i18n";
 import { ALL_LOCALES, type Lang } from "@/lib/locales";
@@ -34,12 +36,11 @@ export async function titleMetadata(t: TitleFull, lang: Lang) {
   const region = ALL_LOCALES[lang].region;
   const where = (t.providers[region] ?? []).map((p) => p.name).join(", ");
   const desc = `${where ? fmt(d.title.metaWhere, { name: tx.name, where }) + " " : ""}${tx.overview ?? ""}`.slice(0, 158);
-  const image = img(t.backdrop_path, "w1280") ?? img(t.poster_path, "w780");
   return {
     title: fmt(d.title.metaTitle, { name: tx.name, year: t.year ?? "" }).replace(" ()", ""),
     description: desc,
     alternates: alternates(lang, (l) => `/${t.kind}/${t.tmdb_id}-${texts(t, l).slug}`),
-    openGraph: { title: tx.name, description: desc, images: image ? [image] : [], type: t.kind === "movie" ? "video.movie" as const : "video.tv_show" as const },
+    openGraph: { title: tx.name, description: desc, type: t.kind === "movie" ? "video.movie" as const : "video.tv_show" as const },
   };
 }
 
@@ -55,9 +56,10 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
   const following = fol.has(t.id);
   // Sledovaný seriál bez stiahnutých epizód: stiahneme ich teraz (raz).
   if (t.kind === "tv" && following && !t.seasons_synced_at && tmdbConfigured()) await syncAllSeasons(t.id).catch(() => {});
-  const [mine, sim, genres, eps, reviews, premium] = await Promise.all([
+  const [mine, sim, genres, eps, reviews, premium, wants, hides, seen] = await Promise.all([
     myRating(dev, t.id), similar(t, ctx), genreNames(t.kind, t.genre_ids, lang),
     t.kind === "tv" ? episodesFor(t.id, lang, dev) : Promise.resolve([]), reviewsFor(t.id, dev), isPremium(dev),
+    idSet("want", dev), idSet("hidden", dev), t.kind === "movie" ? movieSeen(dev, t.id) : Promise.resolve(false),
   ]);
   const today = todayISO();
   const nd = daysUntil(t.next_air_date);
@@ -116,6 +118,7 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
           <p><b>{d.title.nextEpisode}:</b> {epCode(t.next_ep.season, t.next_ep.episode)}{nextName ? ` · ${nextName}` : ""} · {fmtDate(t.next_air_date, lang)} ({rel(nd, lang)})</p>
         )}
         <FollowButton titleId={t.id} name={tx.name} initial={following} variant="full" kind={t.kind} hint={followHint({ kind: t.kind, next_ep: t.next_ep, next_air_date: t.next_air_date }, lang)} />
+        <TitleActions titleId={t.id} kind={t.kind} want={wants.has(t.id)} hidden={hides.has(t.id)} seen={seen} />
         {t.creators.length > 0 && <p className="muted">{t.kind === "movie" ? d.title.directors : d.title.creators}: {t.creators.join(", ")}</p>}
       </div>
 
@@ -187,7 +190,8 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
 
       {sim.length > 0 && (
         <div className="tile w4">
-          <div className="cathead"><h2>{d.title.similar}</h2></div>
+          <div className="cathead"><h2>{d.title.similar}</h2>
+            <Link className="btn soft" href={`${titleHref(lang, { kind: t.kind, tmdb_id: t.tmdb_id, slug: tx.slug })}/similar`}>{d.similar.more}</Link></div>
           <div className="posters">{sim.map((x) => <Poster key={x.id} s={x} lang={lang} followed={fol.has(x.id)} />)}</div>
         </div>
       )}

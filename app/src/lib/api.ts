@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { ensureDevice } from "./device";
+import { allow, clientIp } from "./ratelimit";
 
-/** Spoločný obal pre API: zariadenie, JSON telo a chyby. */
-export function handler(fn: (deviceId: string, body: any) => Promise<unknown>) {
+type Opts = { limit?: [max: number, windowSec: number]; name?: string };
+
+/** Spoločný obal pre API: obmedzenie požiadaviek, zariadenie, JSON telo a chyby. */
+export function handler(fn: (deviceId: string, body: any) => Promise<unknown>, opts: Opts = {}) {
   return async (req: Request) => {
     try {
+      const [max, win] = opts.limit ?? [120, 60];
+      const ip = clientIp(await headers());
+      if (!allow(`${opts.name ?? new URL(req.url).pathname}:${req.method}:${ip}`, max, win)) {
+        return NextResponse.json({ error: "rate" }, { status: 429, headers: { "Retry-After": String(win) } });
+      }
       const body = req.method === "GET" ? null : await req.json().catch(() => ({}));
       const dev = await ensureDevice();
       const out = await fn(dev, body);

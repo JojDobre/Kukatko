@@ -3,6 +3,8 @@ import Link from "next/link";
 import { deviceId } from "@/lib/device";
 import { followed, recommended } from "@/lib/queries";
 import { inProgress } from "@/lib/extra";
+import { hiddenList, wantList } from "@/lib/features";
+import { Unhide } from "@/components/TitleActions";
 import { daysUntil, epCode, fmtDate, rel, todayISO } from "@/lib/format";
 import { fmt } from "@/lib/i18n";
 import { page, titleHref, type LangParams } from "@/lib/page";
@@ -19,7 +21,10 @@ export default async function Watchlist({ params }: { params: LangParams }) {
   const { lang, d, ctx, h } = await page(params);
   const dev = await deviceId();
   const today = todayISO();
-  const [mine, rec, prog] = await Promise.all([dev ? followed(ctx, dev) : [], recommended(ctx, dev, 12), dev ? inProgress(dev, lang, today) : []]);
+  const [mine, rec, prog, want, hid] = await Promise.all([
+    dev ? followed(ctx, dev) : [], recommended(ctx, dev, 12), dev ? inProgress(dev, lang, today) : [],
+    dev ? wantList(ctx, dev) : [], dev ? hiddenList(ctx, dev) : [],
+  ]);
   const tv = mine.filter((s) => s.kind === "tv");
   const movies = mine.filter((s) => s.kind === "movie");
   const up = tv.filter((s) => (daysUntil(s.next_air_date) ?? -1) >= 0);
@@ -29,6 +34,12 @@ export default async function Watchlist({ params }: { params: LangParams }) {
 
   return (
     <div className="bento">
+      <nav className="tile w4 quick" aria-label={d.watchlist.metaTitle}>
+        <Link className="chip big" href={h("/pick")}>{d.more.pick}</Link>
+        <Link className="chip big" href={h("/calendar?mine=1")}>{d.more.calendar}</Link>
+        <Link className="chip big" href={h("/stats")}>{d.more.stats}</Link>
+        <Link className="chip big" href={h("/together")}>{d.more.together}</Link>
+      </nav>
       {progress.length > 0 && (
         <div className="tile w4">
           <div className="lbl"><span>{d.watched.inProgress}</span><span>{progress.length}</span></div>
@@ -73,9 +84,27 @@ export default async function Watchlist({ params }: { params: LangParams }) {
         </div>
       )}
       <div className="tile w4">
+        <div className="lbl"><span>{d.want.list}</span><span>{want.length}</span></div>
+        {want.length ? <div className="posters">{want.map((s) => <Poster key={s.id} s={s} lang={lang} followed={ids.has(s.id)}
+          note={s.providers.length ? undefined : <span>{d.watchlist.notStreaming}</span>} />)}</div> : <p className="muted">{d.want.empty}</p>}
+        {want.length > 0 && <small className="muted">{d.want.hint}</small>}
+      </div>
+      <div className="tile w4">
         <div className="lbl"><span>{mine.length ? d.watchlist.mightLike : d.watchlist.startWith}</span></div>
         <div className="posters">{rec.map((s) => <Poster key={s.id} s={s} lang={lang} followed={ids.has(s.id)} />)}</div>
       </div>
+      {hid.length > 0 && (
+        <details className="tile w4">
+          <summary className="lbl" style={{ cursor: "pointer" }}><span>{d.hidden.list}</span><span>{hid.length}</span></summary>
+          {hid.map((s) => (
+            <div key={s.id} className="wrow">
+              <Thumb s={s} />
+              <span><Link href={titleHref(lang, s)}><b>{s.name}</b></Link><small>{s.year}</small></span>
+              <Unhide titleId={s.id} />
+            </div>
+          ))}
+        </details>
+      )}
     </div>
   );
 }

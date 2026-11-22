@@ -131,6 +131,65 @@ const cs: Dict = {
     removedTitle: "{name}: už není na platformě {p}", removedBody: "Z platformy {p} zmizelo.", removedElsewhere: "Nyní ho najdeš na: {others}.",
     reminderTitle: "Zítra: {name}", reminderBody: "{ep} vychází zítra.",
   },
+  platform: {
+    metaTitle: "{p}: novinky, odchody a nejlepší tituly", metaDesc: "Co je nového na platformě {p}, co z ní zmizelo a nejlepší seriály a filmy. Aktualizováno každý den.",
+    inCatalog: "titulů v katalogu", newHere: "Novinky na platformě", leaving: "Zmizelo z platformy", upcoming: "Nové díly tento týden",
+    all: "Všechny platformy", allIntro: "Vyber platformu a uvidíš, co je na ní nového a co stojí za zhlédnutí.",
+  },
+  similar: {
+    titleTv: "Seriály podobné jako {name}", titleMovie: "Filmy podobné jako {name}",
+    metaDesc: "Pokud se ti líbil {name}, podívej se na tyto tipy. I s tím, kde je sledovat.", more: "Více podobných", back: "Zpět na {name}",
+  },
+  calendar: {
+    title: "Kalendář vydání", metaDesc: "Kdy vycházejí nové díly seriálů na Netflixu, HBO Max, Disney+ a dalších. Přehled na celý měsíc.",
+    prev: "Předchozí měsíc", next: "Další měsíc", empty: "V tomto měsíci zatím nic nevychází.", premiere: "premiéra", onlyMine: "Jen sledované", all: "Vše",
+  },
+  pick: {
+    title: "Co dnes sledovat?", metaDesc: "Odpověz na tři otázky a vybereme ti seriál nebo film na dnešní večer z tvých platforem.",
+    mood: "Na co máš náladu?", kind: "Film nebo seriál?", either: "Je mi to jedno", time: "Kolik máš času?",
+    moods: { relax: "Oddech a smích", tense: "Napětí", think: "K zamyšlení", action: "Akce a dobrodružství", romance: "Romantika", scary: "Strach", family: "S rodinou", surprise: "Překvap mě" },
+    times: { short: "Do hodiny", medium: "Do dvou hodin", long: "Mám celý večer" },
+    result: "Tipy pro tebe", again: "Jiné tipy", restart: "Začít znovu", none: "Nenašli jsme nic vhodného. Zkus jinou náladu nebo zruš filtr platforem.",
+    onPlatforms: "Hledáme jen na tvých platformách.", anyPlatform: "Hledáme na všech platformách. Své si vyber v katalogu.", cta: "Vybrat tipy",
+  },
+  want: {
+    add: "Chci vidět", added: "Přidáno do Chci vidět", on: "V seznamu Chci vidět", removed: "Odebráno z Chci vidět",
+    list: "Chci vidět", empty: "Seznam je prázdný. Přidej si tituly tlačítkem Chci vidět.", hint: "Upozorníme tě, až přibudou na tvou platformu.",
+  },
+  hidden: { hide: "Nezajímá mě", done: "Skryto. Už ti ho nebudeme doporučovat.", undo: "Vrátit", list: "Skryté tituly", none: "Nic není skryto." },
+  stats: {
+    title: "Moje statistiky", hours: "hodin sledování", episodes: "dílů", movies: "filmů", rated: "hodnocení",
+    topGenres: "Nejčastější žánry", topRated: "Nejlépe hodnocené", byMonth: "Zhlédnuto podle měsíců",
+    recap: "Můj rok {year}", recapTitle: "Můj rok {year} na {site}", share: "Sdílet obrázek", empty: "Zatím tu nic není. Odškrtávej zhlédnuté díly a filmy a hodnoť tituly.",
+    markMovie: "Viděl jsem", markedMovie: "Viděno",
+  },
+  together: {
+    title: "Sledujte spolu", intro: "Pošli kamarádovi odkaz. Najdeme tituly, které jste neviděli ani jeden, na platformách, které máte.",
+    create: "Vytvořit odkaz", link: "Odkaz pro kamaráda", valid: "Platí 7 dní.", waiting: "Čekáme, až kamarád otevře odkaz.",
+    matches: "Tipy pro vás dva", bothWant: "Oba chcete vidět", oneWants: "Jeden z vás chce vidět", none: "Nenašli jsme společné tipy. Přidejte si nejdřív tituly do Chci vidět.",
+    invalid: "Odkaz je neplatný nebo vypršel.", copy: "Kopírovat", copied: "Zkopírováno", share: "Sdílet",
+  },
+  importer: {
+    title: "Import z jiných služeb", intro: "Nahraj soubor z IMDb, Letterboxd nebo Trakt. Přeneseme hodnocení, seznam Chci vidět a zhlédnuté filmy.",
+    choose: "Vybrat soubor", howto: "Kde najdu soubor?",
+    howImdb: "IMDb: Hodnocení nebo Watchlist → tři tečky → Exportovat (soubor CSV).",
+    howLb: "Letterboxd: Settings → Import & Export → Export your data. Ze ZIP nahraj ratings.csv, watchlist.csv nebo watched.csv.",
+    howTrakt: "Trakt: Settings → Data → Export. Nahraj JSON soubor s hodnoceními nebo watchlistem.",
+    working: "Importuji…", done: "Hotovo: {r} hodnocení, {w} do Chci vidět, {s} zhlédnutých, nespárovaných {u}.",
+    later: "Tituly, které ještě nemáme v katalogu, doplníme na pozadí během pár minut.",
+    error: "Soubor se nepodařilo přečíst. Zkontroluj, zda jde o export z IMDb, Letterboxd nebo Trakt.",
+  },
+  ical: {
+    title: "Kalendář v telefonu", intro: "Vydání sledovaných seriálů se ti zobrazí v kalendáři a samy se aktualizují.",
+    google: "Přidat do Google Kalendáře", apple: "Přidat do Apple Kalendáře", copy: "Kopírovat odkaz", note: "Odkaz je soukromý, nikomu ho neposílej.",
+  },
+  filters: {
+    year: "Rok", runtime: "Délka", language: "Původní jazyk", score: "Hodnocení", scoreMin: "alespoň {n} %", any: "Jakékoli", older: "starší", reset: "Zrušit filtry",
+    runtimeMovie: { short: "do 90 min", medium: "90 až 120 min", long: "nad 120 min" },
+    runtimeTv: { short: "díly do 30 min", medium: "díly 30 až 60 min", long: "díly nad 60 min" },
+  },
+  promo: { label: "Reklama" },
+  more: { pick: "Co dnes?", calendar: "Kalendář", platforms: "Platformy", stats: "Moje statistiky", together: "Sledujte spolu" },
 };
 
 export default cs;

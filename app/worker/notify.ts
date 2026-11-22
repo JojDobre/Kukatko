@@ -102,6 +102,23 @@ export async function findJobs(now = new Date()): Promise<Job[]> {
         url, image: image(r.poster_path), title: fmt(d.notify.arrivedTitle, { name, p: r.provider }), body: d.notify.arrivedBody });
     }
   }
+  // „Chcem vidieť“: titul pribudol na platformu zariadenia (ak si platformy vybralo, len na tie).
+  const wants = await sql<(Row & { provider: string; provider_id: number; first_seen: Date })[]>`
+    SELECT w.device_id, t.id AS title_id, t.kind, t.tmdb_id, t.i18n, t.original_name, t.poster_path, d.lang, d.region, d.prefs,
+      false AS premium, p.name AS provider, a.provider_id, a.first_seen
+    FROM want w JOIN titles t ON t.id = w.title_id JOIN devices d ON d.id = w.device_id
+    JOIN availability a ON a.title_id = t.id AND a.region = d.region
+    JOIN providers p ON p.id = a.provider_id
+    WHERE EXISTS (SELECT 1 FROM push_subscriptions ps WHERE ps.device_id = w.device_id)
+      AND NOT EXISTS (SELECT 1 FROM follows f WHERE f.device_id = w.device_id AND f.title_id = w.title_id)
+      AND a.removed_at IS NULL AND NOT a.initial AND a.first_seen > now() - interval '48 hours'
+      AND (coalesce(jsonb_array_length(d.platforms->d.region), 0) = 0 OR (d.platforms->d.region) @> to_jsonb(a.provider_id))`;
+  for (const r of wants) {
+    if (r.prefs.availability === false) continue;
+    const { name, url, d } = names(r);
+    jobs.push({ device_id: r.device_id, title_id: r.title_id, key: `want:${r.region}:${r.provider_id}:${r.first_seen.toISOString().slice(0, 10)}`,
+      url, image: image(r.poster_path), title: fmt(d.notify.arrivedTitle, { name, p: r.provider }), body: `${d.want.list} · ${d.notify.arrivedBody}` });
+  }
   return jobs;
 }
 

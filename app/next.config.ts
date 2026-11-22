@@ -4,6 +4,8 @@ const config: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   images: { unoptimized: true },
+  // Písma pre obrázky na zdieľanie (čítajú sa zo súboru za behu).
+  outputFileTracingIncludes: { "/**": ["./assets/fonts/**"] },
   async headers() {
     return [
       {

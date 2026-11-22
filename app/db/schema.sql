@@ -224,3 +224,53 @@ CREATE TABLE IF NOT EXISTS kv (
   value      jsonb NOT NULL,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- ===== Verzia 3 =====
+-- Platformy, ktoré má zariadenie (kvôli upozorneniam „Chcem vidieť“ a „Pozerajte spolu“): {"SK": [8, 337]}
+ALTER TABLE devices ADD COLUMN IF NOT EXISTS platforms  jsonb NOT NULL DEFAULT '{}';
+-- Tajný kľúč pre odkaz na kalendár v telefóne (iCal).
+ALTER TABLE devices ADD COLUMN IF NOT EXISTS ical_token text UNIQUE;
+-- Dĺžka epizódy/filmu na štatistiky (pre filmy ukladáme pozretie ako season = 0, episode = 0).
+
+-- Zoznam „Chcem vidieť“.
+CREATE TABLE IF NOT EXISTS want (
+  device_id  uuid    NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+  title_id   integer NOT NULL REFERENCES titles(id)  ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (device_id, title_id)
+);
+CREATE INDEX IF NOT EXISTS want_title_idx ON want (title_id);
+
+-- „Nezaujíma ma“: tituly, ktoré sa nemajú ukazovať v odporúčaniach.
+CREATE TABLE IF NOT EXISTS hidden (
+  device_id  uuid    NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+  title_id   integer NOT NULL REFERENCES titles(id)  ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (device_id, title_id)
+);
+
+-- „Pozerajte spolu“: kód, ktorý spojí dve zariadenia.
+CREATE TABLE IF NOT EXISTS pair_codes (
+  code       text PRIMARY KEY,
+  device_a   uuid NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+  device_b   uuid REFERENCES devices(id) ON DELETE CASCADE,
+  expires_at timestamptz NOT NULL
+);
+
+-- Odporúčané (predané) reklamné boxy, spravujú sa v administrácii.
+CREATE TABLE IF NOT EXISTS promos (
+  id          serial PRIMARY KEY,
+  label       text NOT NULL,                       -- interný názov (napr. „Netflix december“)
+  title_id    integer REFERENCES titles(id) ON DELETE SET NULL,
+  headline    text NOT NULL,
+  body        text,
+  image_url   text,
+  url         text NOT NULL,
+  langs       text[] NOT NULL DEFAULT '{}',          -- prázdne = všetky jazyky
+  starts_at   date NOT NULL DEFAULT current_date,
+  ends_at     date NOT NULL DEFAULT (current_date + 30),
+  active      boolean NOT NULL DEFAULT true,
+  impressions integer NOT NULL DEFAULT 0,
+  clicks      integer NOT NULL DEFAULT 0,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);

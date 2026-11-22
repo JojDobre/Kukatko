@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Chart, Grid, List, Search, User } from "./icons";
+import { Bell, Calendar, Chart, Grid, List, Search, User } from "./icons";
 import { useI18n } from "./I18n";
 import LangSwitch from "./LangSwitch";
 
@@ -11,6 +11,7 @@ function useItems() {
     { key: "home", href: href("/"), label: d.nav.home, icon: <Grid /> },
     { key: "catalog", href: href("/catalog"), label: d.nav.catalog, icon: <List /> },
     { key: "charts", href: href("/charts"), label: d.nav.charts, icon: <Chart /> },
+    { key: "calendar", href: href("/calendar"), label: d.more.calendar, icon: <Calendar />, desktopOnly: true },
     { key: "watchlist", href: href("/watchlist"), label: d.nav.watchlist, icon: <Bell /> },
     { key: "profile", href: href("/profile"), label: d.nav.profile, icon: <User /> },
   ];
@@ -42,7 +43,7 @@ export function TabBar() {
   const items = useItems();
   return (
     <nav className="tabbar" aria-label="Menu">
-      {items.map((i) => <Link key={i.key} href={i.href} aria-current={isActive(path, i.href, items[0].href) ? "page" : undefined}>{i.icon}{i.label}</Link>)}
+      {items.filter((i) => !i.desktopOnly).map((i) => <Link key={i.key} href={i.href} aria-current={isActive(path, i.href, items[0].href) ? "page" : undefined}>{i.icon}{i.label}</Link>)}
     </nav>
   );
 }

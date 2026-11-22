@@ -19,6 +19,8 @@ export default async function Admin() {
     );
   }
 
+  const promos = await sql<{ id: number; label: string; headline: string; url: string; langs: string[]; starts_at: string; ends_at: string; active: boolean; impressions: number; clicks: number }[]>`
+    SELECT id, label, headline, url, langs, starts_at, ends_at, active, impressions, clicks FROM promos ORDER BY created_at DESC LIMIT 50`;
   const [queue, clicksByProv, topTitles, state, counts] = await Promise.all([
     sql<{ id: number; body: string; nickname: string | null; status: string; reports: number; created_at: Date; name: string; lang: string }[]>`
       SELECT r.id, r.body, r.nickname, r.status, r.reports, r.created_at, r.lang, t.original_name AS name
@@ -65,6 +67,38 @@ export default async function Admin() {
             <div className="frow">{btn(r.id, "approve", "Schváliť")}{btn(r.id, "hide", "Skryť")}{btn(r.id, "delete", "Zmazať")}{btn(r.id, "ban", "Zmazať všetky od autora")}</div>
           </div>
         ))}
+      </div>
+      <div className="tile w4" id="promos">
+        <div className="lbl"><span>Odporúčané boxy (predaná reklama na domovskej stránke)</span><span>{promos.length}</span></div>
+        <p className="muted">Box sa zobrazí na domovskej stránke s označením „Reklama“. Prémioví užívatelia ho nevidia. Ak je aktívnych viac, striedajú sa náhodne.</p>
+        {promos.map((p) => (
+          <div key={p.id} className="ep" style={{ gridTemplateColumns: "1fr auto auto" }}>
+            <span><b>{p.label}</b> · {p.headline}<br /><small className="muted">{p.starts_at} až {p.ends_at} · {p.langs.length ? p.langs.join(", ") : "všetky jazyky"} · {p.url}</small></span>
+            <span className="mono">{p.impressions} zobrazení · {p.clicks} klikov{p.impressions ? ` (${((p.clicks / p.impressions) * 100).toFixed(1)} %)` : ""}</span>
+            <span className="frow">
+              <form method="post" action="/api/admin/promo"><input type="hidden" name="id" value={p.id} /><input type="hidden" name="action" value="toggle" /><button className="btn soft">{p.active ? "Vypnúť" : "Zapnúť"}</button></form>
+              <form method="post" action="/api/admin/promo"><input type="hidden" name="id" value={p.id} /><input type="hidden" name="action" value="delete" /><button className="btn soft">Zmazať</button></form>
+            </span>
+          </div>
+        ))}
+        <form method="post" action="/api/admin/promo" className="promoform">
+          <input type="hidden" name="action" value="create" />
+          <input className="inp" name="label" placeholder="Interný názov (napr. Netflix december)" />
+          <input className="inp" name="headline" placeholder="Nadpis *" required maxLength={120} />
+          <input className="inp" name="body" placeholder="Krátky text" maxLength={240} />
+          <input className="inp" name="url" placeholder="Cieľová adresa https://… *" required />
+          <input className="inp" name="image" placeholder="Obrázok https://… (nepovinné)" />
+          <div className="frow">
+            <select className="inp" name="kind" style={{ width: "auto" }}><option value="tv">Seriál</option><option value="movie">Film</option></select>
+            <input className="inp" name="tmdb" placeholder="TMDB id titulu (plagát, nepovinné)" style={{ flex: 1 }} />
+          </div>
+          <div className="frow">
+            <input className="inp" name="langs" placeholder="Jazyky, napr. sk,cs (prázdne = všetky)" style={{ flex: 1 }} />
+            <input className="inp" type="date" name="starts" style={{ width: "auto" }} />
+            <input className="inp" type="date" name="ends" style={{ width: "auto" }} />
+          </div>
+          <button className="btn" style={{ alignSelf: "flex-start" }}>Pridať box</button>
+        </form>
       </div>
       <div className="tile w2">
         <div className="lbl"><span>Kliky na platformy (30 dní)</span></div>

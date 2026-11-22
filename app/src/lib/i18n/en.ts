@@ -131,6 +131,65 @@ const en: Dict = {
     removedTitle: "{name}: no longer on {p}", removedBody: "It has left {p}.", removedElsewhere: "You can now find it on: {others}.",
     reminderTitle: "Tomorrow: {name}", reminderBody: "{ep} comes out tomorrow.",
   },
+  platform: {
+    metaTitle: "{p}: what's new, what's leaving and the best titles", metaDesc: "What's new on {p}, what has left and the best series and films. Updated daily.",
+    inCatalog: "titles in the catalogue", newHere: "New on this service", leaving: "Left this service", upcoming: "New episodes this week",
+    all: "All services", allIntro: "Pick a service to see what's new and what's worth watching.",
+  },
+  similar: {
+    titleTv: "Series like {name}", titleMovie: "Films like {name}",
+    metaDesc: "If you liked {name}, try these. With where to watch them.", more: "More like this", back: "Back to {name}",
+  },
+  calendar: {
+    title: "Release calendar", metaDesc: "When new episodes come out on Netflix, Disney+, Prime Video and more. The whole month at a glance.",
+    prev: "Previous month", next: "Next month", empty: "Nothing is scheduled this month yet.", premiere: "premiere", onlyMine: "Only followed", all: "Everything",
+  },
+  pick: {
+    title: "What to watch tonight?", metaDesc: "Answer three questions and we'll pick a series or film for tonight from your services.",
+    mood: "What are you in the mood for?", kind: "Film or series?", either: "Either", time: "How much time do you have?",
+    moods: { relax: "Light and funny", tense: "Suspense", think: "Something thoughtful", action: "Action and adventure", romance: "Romance", scary: "Scary", family: "Family time", surprise: "Surprise me" },
+    times: { short: "Under an hour", medium: "Under two hours", long: "All evening" },
+    result: "Picks for you", again: "Other picks", restart: "Start over", none: "Nothing suitable found. Try another mood or clear the service filter.",
+    onPlatforms: "Searching only your services.", anyPlatform: "Searching all services. Choose yours in the catalogue.", cta: "Show picks",
+  },
+  want: {
+    add: "Want to watch", added: "Added to Want to watch", on: "In Want to watch", removed: "Removed from Want to watch",
+    list: "Want to watch", empty: "Your list is empty. Add titles with the Want to watch button.", hint: "We'll let you know when they arrive on your services.",
+  },
+  hidden: { hide: "Not interested", done: "Hidden. We won't recommend it again.", undo: "Undo", list: "Hidden titles", none: "Nothing is hidden." },
+  stats: {
+    title: "My stats", hours: "hours watched", episodes: "episodes", movies: "films", rated: "ratings",
+    topGenres: "Top genres", topRated: "Top rated", byMonth: "Watched by month",
+    recap: "My {year}", recapTitle: "My {year} on {site}", share: "Share image", empty: "Nothing here yet. Tick off episodes and films you've watched and rate titles.",
+    markMovie: "I've seen it", markedMovie: "Seen",
+  },
+  together: {
+    title: "Watch together", intro: "Send a friend a link. We'll find titles neither of you has seen, on the services you have.",
+    create: "Create link", link: "Link for your friend", valid: "Valid for 7 days.", waiting: "Waiting for your friend to open the link.",
+    matches: "Picks for you two", bothWant: "You both want to watch", oneWants: "One of you wants to watch", none: "No shared picks found. Add some titles to Want to watch first.",
+    invalid: "The link is invalid or has expired.", copy: "Copy", copied: "Copied", share: "Share",
+  },
+  importer: {
+    title: "Import from other services", intro: "Upload a file from IMDb, Letterboxd or Trakt. We'll bring over ratings, your watchlist and watched films.",
+    choose: "Choose file", howto: "Where do I find the file?",
+    howImdb: "IMDb: Ratings or Watchlist → three dots → Export (CSV file).",
+    howLb: "Letterboxd: Settings → Import & Export → Export your data. From the ZIP, upload ratings.csv, watchlist.csv or watched.csv.",
+    howTrakt: "Trakt: Settings → Data → Export. Upload the JSON file with ratings or watchlist.",
+    working: "Importing…", done: "Done: {r} ratings, {w} to Want to watch, {s} watched, {u} unmatched.",
+    later: "Titles we don't have yet will be added in the background within a few minutes.",
+    error: "Couldn't read the file. Check that it's an export from IMDb, Letterboxd or Trakt.",
+  },
+  ical: {
+    title: "Calendar on your phone", intro: "Releases of the series you follow appear in your calendar and update automatically.",
+    google: "Add to Google Calendar", apple: "Add to Apple Calendar", copy: "Copy link", note: "This link is private, don't share it.",
+  },
+  filters: {
+    year: "Year", runtime: "Length", language: "Original language", score: "Rating", scoreMin: "at least {n}%", any: "Any", older: "older", reset: "Clear filters",
+    runtimeMovie: { short: "under 90 min", medium: "90 to 120 min", long: "over 120 min" },
+    runtimeTv: { short: "episodes under 30 min", medium: "episodes 30 to 60 min", long: "episodes over 60 min" },
+  },
+  promo: { label: "Ad" },
+  more: { pick: "Tonight?", calendar: "Calendar", platforms: "Services", stats: "My stats", together: "Watch together" },
 };
 
 export default en;

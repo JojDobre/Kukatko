@@ -3,7 +3,7 @@ import { LANGS, href } from "@/lib/locales";
 import { SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
-  const priv = ["/watchlist", "/profile", "/search", "/transfer"];
+  const priv = ["/watchlist", "/profile", "/search", "/transfer", "/together", "/stats"];
   return {
     rules: {
       userAgent: "*",

@@ -7,6 +7,12 @@ export const POST = handler(async (dev, b) => {
   const titleId = Number(b?.titleId), season = Number(b?.season);
   const episode = b?.episode == null ? null : Number(b.episode);
   if (!Number.isInteger(titleId) || !Number.isInteger(season) || (episode !== null && !Number.isInteger(episode))) throw bad("Neplatná epizóda");
+  // Film: pozretie ukladáme ako season = 0, episode = 0.
+  if (season === 0) {
+    if (b?.on) await sql`INSERT INTO watched (device_id, title_id, season, episode) SELECT ${dev}, id, 0, 0 FROM titles WHERE id = ${titleId} AND kind = 'movie' ON CONFLICT DO NOTHING`;
+    else await sql`DELETE FROM watched WHERE device_id = ${dev} AND title_id = ${titleId} AND season = 0`;
+    return { ok: true };
+  }
   const where = sql`title_id = ${titleId} AND season = ${season} ${episode !== null ? sql`AND episode = ${episode}` : sql``}`;
   if (b?.on) {
     await sql`INSERT INTO watched (device_id, title_id, season, episode)

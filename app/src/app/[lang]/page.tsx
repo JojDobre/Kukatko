@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { deviceId, isPremium } from "@/lib/device";
 import { selectedPlats } from "@/lib/prefs";
-import { followed, followedIds, newArrivals, topRated, upcoming } from "@/lib/queries";
+import { followed, followedIds, newArrivals, providerList, topRated, upcoming } from "@/lib/queries";
+import { activePromo } from "@/lib/promo";
+import PromoTile from "@/components/PromoTile";
+import { platformStyle } from "@/lib/platforms";
 import { daysUntil, epCode, fmtDate, img, rel, todayISO, tone } from "@/lib/format";
 import { plural } from "@/lib/i18n";
 import { page, titleHref, type LangParams } from "@/lib/page";
@@ -23,7 +26,7 @@ export default async function Home({ params }: { params: LangParams }) {
   const { lang, d, ctx, h } = await page(params);
   const dev = await deviceId();
   const plats = await selectedPlats(ctx.region);
-  const [up, topTv, topMovies, fresh, fol, mine, premium] = await Promise.all([
+  const [up, topTv, topMovies, fresh, fol, mine, premium, provs] = await Promise.all([
     upcoming(ctx, 12, plats),
     topRated(ctx, "tv", 12, plats),
     topRated(ctx, "movie", 12, plats),
@@ -31,7 +34,9 @@ export default async function Home({ params }: { params: LangParams }) {
     followedIds(dev),
     dev ? followed(ctx, dev) : Promise.resolve([]),
     isPremium(dev),
+    providerList(ctx.region, 3),
   ]);
+  const promo = premium ? null : await activePromo(lang);
 
   if (!up.length && !topTv.length && !topMovies.length) {
     return (
@@ -94,6 +99,23 @@ export default async function Home({ params }: { params: LangParams }) {
           <div className="ring" style={{ background: `conic-gradient(${tone(best.score)} ${best.score ?? 0}%, var(--tile2) 0)` }}><b>{best.score}</b></div>
         </Link>
       )}
+
+      <Link href={h("/pick")} className="tile w2 click pickt">
+        <span className="lbl"><span>{d.more.pick}</span></span>
+        <h2>{d.pick.title}</h2>
+        <p>{d.pick.metaDesc}</p>
+        <span className="btn">{d.pick.cta}</span>
+      </Link>
+
+      <div className="tile w2">
+        <div className="lbl"><span>{d.more.platforms}</span><Link className="link" href={h("/calendar")}>{d.more.calendar} →</Link></div>
+        <div className="chartlinks">
+          {provs.slice(0, 8).map((p) => <Link key={p.id} className="chip" href={h(`/platform/${p.slug}`)}><span className="pdot" style={{ background: platformStyle(p.name).color }} />{p.name}</Link>)}
+          <Link className="chip" href={h("/platforms")}>{d.platform.all} →</Link>
+        </div>
+      </div>
+
+      {promo && <PromoTile p={promo} label={d.promo.label} />}
 
       {fresh.length > 0 && (
         <div className="tile w4">

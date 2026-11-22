@@ -1,0 +1,49 @@
+# Automatické nasadenie na VPS po úspešných testoch vo vetve main.
+# Potrebné tajomstvá v GitHub → Settings → Secrets and variables → Actions:
+#   VPS_HOST, VPS_USER, VPS_SSH_KEY (súkromný kľúč), voliteľne VPS_PORT a VPS_PATH (predvolene ~/kukatko).
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Kontrola nastavení
+        id: check
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          if [ -z "$HOST" ]; then
+            echo "::notice::VPS_HOST nie je nastavený, nasadenie preskakujem."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Nasadenie cez SSH
+        if: steps.check.outputs.skip != 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 25m
+          script: |
+            set -e
+            cd "${{ secrets.VPS_PATH || '~/kukatko' }}"
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build --remove-orphans
+            docker image prune -f
+            sleep 15
+            curl -fsS "https://$(grep '^DOMAIN=' .env | cut -d= -f2)/api/health" || echo "Upozornenie: /api/health zatiaľ nevracia OK (po prvom štarte to môže chvíľu trvať)."

@@ -7,6 +7,8 @@ import { SITE } from "@/lib/site";
 import Settings from "@/components/Settings";
 import Transfer from "@/components/Transfer";
 import PremiumBox from "@/components/PremiumBox";
+import ImportBox from "@/components/ImportBox";
+import IcalBox from "@/components/IcalBox";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +31,8 @@ export default async function Profile({ params, searchParams }: { params: LangPa
       {sp.premium === "ok" && <div className="tile w4 okbox">{d.premium.thanks}</div>}
       <Settings initial={info.prefs} premium={active} premiumEnabled={premiumEnabled} />
       <Transfer initialCode={sp.code} />
+      <IcalBox />
+      <ImportBox />
       {showPremium && (
         <PremiumBox site={SITE} price={process.env.PREMIUM_PRICE_LABEL ?? "1,99 €"} hasCustomer={info.hasCustomer && !(await inApp())}
           until={active ? fmtDate(info.premiumUntil!.toISOString(), lang, { day: "numeric", month: "long", year: "numeric" }) : null} />

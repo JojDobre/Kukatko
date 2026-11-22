@@ -1,0 +1,63 @@
+# Testy pri každom pushnutí a pull requeste: typy, jednotkové testy, build
+# a skúšobný beh webu s databázou a ukážkovými dátami.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: app
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: kukatko
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: kukatko
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kukatko" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgres://kukatko:test@localhost:5432/kukatko
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Kontrola typov
+        run: npm run typecheck
+      - name: Testy
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Databáza a ukážkové dáta
+        run: npm run seed:demo
+      - name: Skúšobný beh webu
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+          PORT=3000 HOSTNAME=127.0.0.1 SITE_URL=http://localhost:3000 node .next/standalone/server.js > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:3000/robots.txt > /dev/null && break; sleep 1; done
+          fail=0
+          for u in / /catalog "/catalog?kind=movie" /charts /calendar /pick /platforms /tv/900007-stranger-things \
+                   /movie/900101-oppenheimer /tv/900007-stranger-things/similar /cs /en/catalog /de/charts /pl/watchlist /hu/profile \
+                   /sitemap.xml /sitemap/sk /manifest.webmanifest /tv/900007-stranger-things/opengraph-image; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000$u")
+            echo "$code $u"
+            [ "$code" = "200" ] || fail=1
+          done
+          if [ $fail = 1 ]; then cat server.log; exit 1; fi

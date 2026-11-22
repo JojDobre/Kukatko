@@ -131,6 +131,65 @@ const pl: Dict = {
     removedTitle: "{name}: już nie ma w serwisie {p}", removedBody: "Zniknęło z serwisu {p}.", removedElsewhere: "Teraz znajdziesz go w: {others}.",
     reminderTitle: "Jutro: {name}", reminderBody: "{ep} wychodzi jutro.",
   },
+  platform: {
+    metaTitle: "{p}: nowości, odejścia i najlepsze tytuły", metaDesc: "Co nowego w serwisie {p}, co z niego zniknęło oraz najlepsze seriale i filmy. Aktualizowane codziennie.",
+    inCatalog: "tytułów w katalogu", newHere: "Nowości w serwisie", leaving: "Zniknęło z serwisu", upcoming: "Nowe odcinki w tym tygodniu",
+    all: "Wszystkie serwisy", allIntro: "Wybierz serwis, aby zobaczyć nowości i to, co warto obejrzeć.",
+  },
+  similar: {
+    titleTv: "Seriale podobne do {name}", titleMovie: "Filmy podobne do {name}",
+    metaDesc: "Jeśli podobał ci się {name}, sprawdź te propozycje. Razem z informacją, gdzie je obejrzeć.", more: "Więcej podobnych", back: "Wróć do {name}",
+  },
+  calendar: {
+    title: "Kalendarz premier", metaDesc: "Kiedy wychodzą nowe odcinki seriali na Netflixie, Max, Disney+ i innych. Cały miesiąc w jednym miejscu.",
+    prev: "Poprzedni miesiąc", next: "Następny miesiąc", empty: "W tym miesiącu nic jeszcze nie zaplanowano.", premiere: "premiera", onlyMine: "Tylko obserwowane", all: "Wszystko",
+  },
+  pick: {
+    title: "Co dziś obejrzeć?", metaDesc: "Odpowiedz na trzy pytania, a wybierzemy serial lub film na dzisiejszy wieczór z twoich serwisów.",
+    mood: "Na co masz ochotę?", kind: "Film czy serial?", either: "Wszystko jedno", time: "Ile masz czasu?",
+    moods: { relax: "Relaks i śmiech", tense: "Napięcie", think: "Coś do przemyśleń", action: "Akcja i przygoda", romance: "Romans", scary: "Strach", family: "Z rodziną", surprise: "Zaskocz mnie" },
+    times: { short: "Do godziny", medium: "Do dwóch godzin", long: "Cały wieczór" },
+    result: "Propozycje dla ciebie", again: "Inne propozycje", restart: "Zacznij od nowa", none: "Nie znaleźliśmy nic odpowiedniego. Spróbuj innego nastroju lub wyczyść filtr serwisów.",
+    onPlatforms: "Szukamy tylko w twoich serwisach.", anyPlatform: "Szukamy we wszystkich serwisach. Swoje wybierz w katalogu.", cta: "Pokaż propozycje",
+  },
+  want: {
+    add: "Chcę obejrzeć", added: "Dodano do Chcę obejrzeć", on: "Na liście Chcę obejrzeć", removed: "Usunięto z Chcę obejrzeć",
+    list: "Chcę obejrzeć", empty: "Lista jest pusta. Dodawaj tytuły przyciskiem Chcę obejrzeć.", hint: "Damy znać, gdy pojawią się w twoich serwisach.",
+  },
+  hidden: { hide: "Nie interesuje mnie", done: "Ukryto. Nie będziemy go już polecać.", undo: "Cofnij", list: "Ukryte tytuły", none: "Nic nie jest ukryte." },
+  stats: {
+    title: "Moje statystyki", hours: "godzin oglądania", episodes: "odcinków", movies: "filmów", rated: "ocen",
+    topGenres: "Najczęstsze gatunki", topRated: "Najwyżej ocenione", byMonth: "Obejrzane według miesięcy",
+    recap: "Mój rok {year}", recapTitle: "Mój rok {year} w {site}", share: "Udostępnij obrazek", empty: "Na razie nic tu nie ma. Odhaczaj obejrzane odcinki i filmy oraz oceniaj tytuły.",
+    markMovie: "Widziałem", markedMovie: "Obejrzane",
+  },
+  together: {
+    title: "Oglądajcie razem", intro: "Wyślij znajomemu link. Znajdziemy tytuły, których żadne z was nie widziało, w serwisach, które macie.",
+    create: "Utwórz link", link: "Link dla znajomego", valid: "Ważny 7 dni.", waiting: "Czekamy, aż znajomy otworzy link.",
+    matches: "Propozycje dla was dwojga", bothWant: "Oboje chcecie obejrzeć", oneWants: "Jedno z was chce obejrzeć", none: "Nie znaleźliśmy wspólnych propozycji. Najpierw dodajcie tytuły do Chcę obejrzeć.",
+    invalid: "Link jest nieprawidłowy lub wygasł.", copy: "Kopiuj", copied: "Skopiowano", share: "Udostępnij",
+  },
+  importer: {
+    title: "Import z innych serwisów", intro: "Wgraj plik z IMDb, Letterboxd lub Trakt. Przeniesiemy oceny, listę Chcę obejrzeć i obejrzane filmy.",
+    choose: "Wybierz plik", howto: "Gdzie znajdę plik?",
+    howImdb: "IMDb: Oceny lub Watchlist → trzy kropki → Eksportuj (plik CSV).",
+    howLb: "Letterboxd: Settings → Import & Export → Export your data. Z archiwum ZIP wgraj ratings.csv, watchlist.csv lub watched.csv.",
+    howTrakt: "Trakt: Settings → Data → Export. Wgraj plik JSON z ocenami lub watchlistą.",
+    working: "Importuję…", done: "Gotowe: ocen {r}, do Chcę obejrzeć {w}, obejrzanych {s}, niedopasowanych {u}.",
+    later: "Tytuły, których jeszcze nie mamy, dodamy w tle w ciągu kilku minut.",
+    error: "Nie udało się odczytać pliku. Sprawdź, czy to eksport z IMDb, Letterboxd lub Trakt.",
+  },
+  ical: {
+    title: "Kalendarz w telefonie", intro: "Premiery obserwowanych seriali pojawią się w twoim kalendarzu i będą się same aktualizować.",
+    google: "Dodaj do Kalendarza Google", apple: "Dodaj do Kalendarza Apple", copy: "Kopiuj link", note: "Link jest prywatny, nikomu go nie wysyłaj.",
+  },
+  filters: {
+    year: "Rok", runtime: "Długość", language: "Język oryginalny", score: "Ocena", scoreMin: "co najmniej {n}%", any: "Dowolna", older: "starsze", reset: "Wyczyść filtry",
+    runtimeMovie: { short: "do 90 min", medium: "90–120 min", long: "ponad 120 min" },
+    runtimeTv: { short: "odcinki do 30 min", medium: "odcinki 30–60 min", long: "odcinki ponad 60 min" },
+  },
+  promo: { label: "Reklama" },
+  more: { pick: "Co dziś?", calendar: "Kalendarz", platforms: "Serwisy", stats: "Moje statystyki", together: "Oglądajcie razem" },
 };
 
 export default pl;

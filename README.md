@@ -29,6 +29,19 @@ app/
 - **Recenzie** s moderovaním: texty s odkazmi alebo hrubými slovami čakajú na schválenie, po 3 nahláseniach sa recenzia skryje. Na deň max. 5 recenzií z jedného zariadenia.
 - **Administrácia** (`/admin`): schvaľovanie recenzií, štatistika klikov na platformy, stav robota.
 - **Prémium bez reklám** cez Stripe. Predvolene **vypnuté** (`PREMIUM_ENABLED=false`).
+- **Stránky platforiem** (`/platforms`, `/platform/netflix`): novinky, čo zmizlo, nové epizódy tento týždeň a najlepšie tituly.
+- **„Podobné ako…“** (`/tv/…/similar`, `/movie/…/similar`): samostatné stránky pre vyhľadávanie typu „seriály podobné ako Dark“.
+- **Kalendár vydaní** (`/calendar`) na celý mesiac, s filtrom platforiem a prepínačom „Len sledované“.
+- **Obrázky na zdieľanie:** pri zdieľaní odkazu na titul sa ukáže karta s plagátom, hodnotením a platformami.
+- **Čo dnes pozrieť?** (`/pick`): tri otázky (nálada, film alebo seriál, čas) a tri tipy z tvojich platforiem.
+- **Chcem vidieť:** samostatný zoznam. Upozornenie príde, keď titul pribudne na tvoju platformu.
+- **Nezaujíma ma:** titul sa prestane ukazovať v odporúčaniach a vo výbere na dnes (dá sa vrátiť v Sledujem).
+- **Moje štatistiky** (`/stats`): hodiny pozerania, žánre, najlepšie hodnotené, prehľad po mesiacoch a obrázok „Môj rok“ na zdieľanie.
+- **Pozerajte spolu** (`/together`): odkaz pre kamaráta, ktorý nájde tituly, čo ste nevideli ani jeden, na vašich platformách.
+- **Import z IMDb, Letterboxd a Trakt** (v profile): hodnotenia, Chcem vidieť a pozreté filmy.
+- **Kalendár v telefóne:** súkromný odkaz pre Google alebo Apple kalendár s vydaniami sledovaných seriálov.
+- **Filtre v katalógu:** rok, dĺžka (film alebo epizóda), minimálne hodnotenie a pôvodný jazyk.
+- **Odporúčané boxy:** reklamné miesto na domovskej stránke, ktoré predáš priamo a spravuješ v `/admin`.
 
 ## Čo beží na VPS
 
@@ -98,6 +111,32 @@ docker compose logs -f worker
 
 Rebríčky „Nové na platformách“ a „Zmizlo z platforiem“ sa začnú plniť až od druhého dňa, lebo robot potrebuje porovnať dve synchronizácie.
 
+## Automatické testy a nasadenie (GitHub Actions)
+
+Pri každom pushnutí sa spustí `CI`: kontrola typov, testy, build a skúšobný beh webu s databázou a ukážkovými dátami. Keď CI prejde vo vetve `main`, spustí sa `Deploy`: pripojí sa na VPS cez SSH, stiahne kód a reštartuje kontajnery.
+
+Nastavenie nasadenia (raz):
+1. Na VPS vytvor kľúč len pre GitHub a povoľ ho:
+   ```bash
+   ssh-keygen -t ed25519 -f ~/.ssh/github_deploy -N ""
+   ```
+   ```bash
+   cat ~/.ssh/github_deploy.pub >> ~/.ssh/authorized_keys
+   ```
+2. V GitHub repozitári otvor *Settings → Secrets and variables → Actions* a pridaj:
+   - `VPS_HOST`: IP adresa alebo doména VPS,
+   - `VPS_USER`: používateľ na VPS,
+   - `VPS_SSH_KEY`: obsah súboru `~/.ssh/github_deploy` (súkromný kľúč),
+   - voliteľne `VPS_PORT` (predvolene 22) a `VPS_PATH` (predvolene `~/kukatko`).
+3. Na VPS musí byť projekt naklonovaný v `VPS_PATH` a mať vyplnený `.env`.
+
+Kým `VPS_HOST` nie je nastavený, nasadenie sa preskočí a beží len CI. Ručne ho spustíš v záložke *Actions → Deploy → Run workflow*. Nasadenie prepíše zmeny v kóde na VPS podľa `main` (súbor `.env` a zálohy zostanú).
+
+## Rýchlosť a ochrana
+
+- Dopyty, ktoré sú rovnaké pre všetkých (rebríčky, zoznamy platforiem, najlepšie hodnotené, katalóg), si web pamätá 5 minút (`CACHE_TTL`).
+- API má obmedzenie počtu požiadaviek z jednej IP adresy (napríklad 120 za minútu, import 6 za 10 minút). Pri prekročení vráti chybu 429.
+
 ## Monitoring (zadarmo)
 
 - **Web:** v [UptimeRobot](https://uptimerobot.com) pridaj sledovanie adresy `https://tvojadomena.sk/api/health`. Vráti chybu 503, ak nefunguje databáza alebo robot nestiahol dáta viac ako 36 hodín.
@@ -148,6 +187,9 @@ Vlastné cookies webu sú len funkčné (id zariadenia, jazyk, vybrané platform
 Prémium skryje reklamy a zapne pripomienku deň vopred. Na ďalšie zariadenia sa prenesie kódom z profilu. Stripe nemá mesačný poplatok, platíš len percento z platby.
 
 **Pravidlá Google Play:** digitálne predplatné predávané v Android appke musí ísť cez platby Google Play. Preto sa v appke nákup prémia **neponúka** (rozpozná sa podľa `?zdroj=app` v úvodnej adrese). Prémium kúpené na webe však v appke platí.
+
+### Odporúčané boxy (priamy predaj reklamy)
+V `/admin` v časti *Odporúčané boxy* pridáš box s nadpisom, textom, cieľovou adresou, obdobím a jazykmi. Voliteľne ho prepojíš s titulom (zobrazí sa jeho plagát). Box sa ukáže na domovskej stránke s označením „Reklama“, prémioví užívatelia ho nevidia. Administrácia ukazuje počet zobrazení a klikov, ktoré môžeš poslať inzerentovi.
 
 ### Štatistiky návštevnosti (voliteľné)
 Umami je štatistika bez cookies, ktorú si spustíš na vlastnom VPS:
