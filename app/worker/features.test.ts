@@ -70,3 +70,24 @@ test("Cache: rovnaký kľúč spustí dopyt len raz, chyba sa neuloží", async 
   await assert.rejects(cached("err", 60, async () => { throw new Error("db"); }));
   assert.equal(await cached("err", 60, async () => 5), 5);
 });
+
+import { mergeSeason } from "../src/lib/tmdb";
+
+test("Epizódy: zlúčenie jazykov, popisy, réžia, scenár a hostia", () => {
+  const ep = (o: { name: string; overview: string; episode_number?: number }) => ({ episode_number: 1, air_date: "2026-01-02", runtime: 52, still_path: "/s.jpg", vote_average: 8.4, vote_count: 120,
+    crew: [{ job: "Director", name: "A" }, { job: "Writer", name: "B" }, { job: "Teleplay", name: "B" }, { job: "Editor", name: "C" }],
+    guest_stars: [{ id: 2, name: "G2", character: "", order: 2 }, { id: 1, name: "G1", character: "Doctor", order: 1, profile_path: "/g.jpg" }], ...o });
+  const rows = mergeSeason([
+    { lang: "sk", episodes: [ep({ name: "Epizóda 1", overview: "" }), ep({ episode_number: 2, name: "Návrat", overview: "Slovenský popis." })] },
+    { lang: "en", episodes: [ep({ name: "Pilot", overview: "English synopsis." }), ep({ episode_number: 2, name: "Return", overview: "EN 2" })] },
+  ]);
+  assert.equal(rows.length, 2);
+  assert.deepEqual(rows[0].names, { en: "Pilot" });               // „Epizóda 1“ je len náhradný názov, neukladá sa
+  assert.deepEqual(rows[0].overviews, { en: "English synopsis." }); // prázdny sk popis sa neukladá
+  assert.deepEqual(rows[1].names, { sk: "Návrat", en: "Return" });
+  assert.deepEqual(rows[0].directors, ["A"]);
+  assert.deepEqual(rows[0].writers, ["B"]);                        // bez duplicít
+  assert.deepEqual(rows[0].guests.map((g) => [g.name, g.character]), [["G1", "Doctor"], ["G2", null]]);
+  assert.equal(rows[0].tmdb_rating, 8.4);
+  assert.equal(rows[0].still_path, "/s.jpg");
+});

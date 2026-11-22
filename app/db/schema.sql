@@ -274,3 +274,34 @@ CREATE TABLE IF NOT EXISTS promos (
   clicks      integer NOT NULL DEFAULT 0,
   created_at  timestamptz NOT NULL DEFAULT now()
 );
+
+-- ===== Verzia 4: epizódy =====
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS overviews   jsonb NOT NULL DEFAULT '{}';   -- {"sk": "…", "en": "…"}
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS still_path  text;
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS tmdb_rating real;
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS tmdb_votes  integer NOT NULL DEFAULT 0;
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS directors   text[] NOT NULL DEFAULT '{}';
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS writers     text[] NOT NULL DEFAULT '{}';
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS guests      jsonb NOT NULL DEFAULT '[]';   -- [{id, name, character, profile_path}]
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS user_avg    real;
+ALTER TABLE episodes ADD COLUMN IF NOT EXISTS user_count  integer NOT NULL DEFAULT 0;
+
+-- Hodnotenia jednotlivých epizód.
+CREATE TABLE IF NOT EXISTS episode_ratings (
+  device_id  uuid     NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+  title_id   integer  NOT NULL,
+  season     integer  NOT NULL,
+  episode    integer  NOT NULL,
+  value      smallint NOT NULL CHECK (value BETWEEN 1 AND 10),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (device_id, title_id, season, episode),
+  FOREIGN KEY (title_id, season, episode) REFERENCES episodes(title_id, season, episode) ON DELETE CASCADE
+);
+
+-- Recenzie epizód: rovnaká tabuľka ako recenzie titulov, season/episode = 0 znamená celý titul.
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS season  integer NOT NULL DEFAULT 0;
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS episode integer NOT NULL DEFAULT 0;
+ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_device_id_title_id_key;
+CREATE UNIQUE INDEX IF NOT EXISTS reviews_unique_idx ON reviews (device_id, title_id, season, episode);
+DROP INDEX IF EXISTS reviews_title_idx;
+CREATE INDEX IF NOT EXISTS reviews_target_idx ON reviews (title_id, season, episode, created_at DESC) WHERE status = 'visible';

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { after } from "next/server";
+import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { deviceId, isPremium } from "@/lib/device";
 import { followedIds, genreNames, getTitle, myRating, similar, texts, type TitleFull } from "@/lib/queries";
@@ -12,7 +14,7 @@ import { platformStyle } from "@/lib/platforms";
 import { personHref, titleHref } from "@/lib/page";
 import { SITE, SITE_URL } from "@/lib/site";
 import { alternates } from "@/lib/seo";
-import { syncAllSeasons } from "@/lib/sync";
+import { syncAllSeasonsOnce } from "@/lib/sync";
 import { tmdbConfigured, type Kind } from "@/lib/tmdb";
 import Poster, { Fallback, followHint } from "./Poster";
 import FollowButton from "./FollowButton";
@@ -54,8 +56,10 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
   const dev = await deviceId();
   const fol = await followedIds(dev);
   const following = fol.has(t.id);
-  // Sledovaný seriál bez stiahnutých epizód: stiahneme ich teraz (raz).
-  if (t.kind === "tv" && following && !t.seasons_synced_at && tmdbConfigured()) await syncAllSeasons(t.id).catch(() => {});
+  // Seriál bez všetkých epizód: stiahneme ich na pozadí (raz), aby sa dali otvárať a odškrtávať.
+  // Roboty vyhľadávačov sťahovanie nespúšťajú (inak by prehľadávanie webu zaťažilo TMDB).
+  const bot = /bot|crawl|spider|slurp|preview/i.test((await headers()).get("user-agent") ?? "");
+  if (t.kind === "tv" && !t.seasons_synced_at && !bot && tmdbConfigured()) after(() => syncAllSeasonsOnce(t.id).catch(() => {}));
   const [mine, sim, genres, eps, reviews, premium, wants, hides, seen] = await Promise.all([
     myRating(dev, t.id), similar(t, ctx), genreNames(t.kind, t.genre_ids, lang),
     t.kind === "tv" ? episodesFor(t.id, lang, dev) : Promise.resolve([]), reviewsFor(t.id, dev), isPremium(dev),
@@ -151,8 +155,8 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
         <div className="tile w2">
           <span className="lbl"><span>{d.title.episodes}</span></span>
           {eps.length
-            ? <Episodes titleId={t.id} eps={eps} startSeason={startSeason} today={today} canTrack={following} dateFmt={dateFmt} />
-            : <p className="muted">{following ? d.watched.loading : t.status === "Ended" || t.status === "Canceled" ? d.title.ended : d.title.noNewSeason}</p>}
+            ? <Episodes titleId={t.id} base={titleHref(lang, { kind: t.kind, tmdb_id: t.tmdb_id, slug: tx.slug })} eps={eps} startSeason={startSeason} today={today} dateFmt={dateFmt} />
+            : <p className="muted">{t.seasons && !t.seasons_synced_at ? d.watched.loading : t.status === "Ended" || t.status === "Canceled" ? d.title.ended : d.title.noNewSeason}</p>}
         </div>
       ) : null}
 

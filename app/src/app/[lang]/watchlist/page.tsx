@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { deviceId } from "@/lib/device";
-import { followed, recommended } from "@/lib/queries";
+import { cardsByIds, followed, recommended } from "@/lib/queries";
 import { inProgress } from "@/lib/extra";
 import { hiddenList, wantList } from "@/lib/features";
 import { Unhide } from "@/components/TitleActions";
@@ -30,7 +30,8 @@ export default async function Watchlist({ params }: { params: LangParams }) {
   const up = tv.filter((s) => (daysUntil(s.next_air_date) ?? -1) >= 0);
   const rest = tv.filter((s) => !up.includes(s));
   const ids = new Set(mine.map((s) => s.id));
-  const progress = prog.map((p) => ({ ...p, t: tv.find((s) => s.id === p.title_id)! })).filter((p) => p.t && p.watched < p.aired);
+  const progCards = await cardsByIds(ctx, prog.map((p) => p.title_id));
+  const progress = prog.map((p) => ({ ...p, t: progCards.find((s) => s.id === p.title_id)! })).filter((p) => p.t && p.watched < p.aired);
 
   return (
     <div className="bento">
@@ -45,7 +46,7 @@ export default async function Watchlist({ params }: { params: LangParams }) {
           <div className="lbl"><span>{d.watched.inProgress}</span><span>{progress.length}</span></div>
           <div className="prog-grid">
             {progress.map((p) => (
-              <Link key={p.title_id} href={titleHref(lang, p.t)} className="wrow">
+              <Link key={p.title_id} href={p.next_season != null ? `${titleHref(lang, p.t)}/season/${p.next_season}/episode/${p.next_episode}` : titleHref(lang, p.t)} className="wrow">
                 <Thumb s={p.t} />
                 <span>
                   <b>{p.t.name}</b>

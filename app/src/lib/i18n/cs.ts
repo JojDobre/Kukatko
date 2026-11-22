@@ -190,6 +190,13 @@ const cs: Dict = {
   },
   promo: { label: "Reklama" },
   more: { pick: "Co dnes?", calendar: "Kalendář", platforms: "Platformy", stats: "Moje statistiky", together: "Sledujte spolu" },
+  episode: {
+    metaTitle: "{show} {code}: {name}", metaDesc: "{show}, {season}. řada, {episode}. díl: {name}. Popis, hodnocení a kde sledovat.",
+    season: "{n}. řada", episode: "{n}. díl", back: "Zpět na seriál", prev: "Předchozí", next: "Další",
+    guests: "Hostující hvězdy", directedBy: "Režie", writtenBy: "Scénář", rating: "Hodnocení dílu", yourRating: "Tvoje hodnocení dílu",
+    watched: "Zhlédnuto", markWatched: "Označit jako zhlédnuté", aired: "Vysíláno", notAired: "Ještě nevyšlo", noOverview: "Popis dílu zatím není k dispozici.",
+    reviews: "Recenze dílu", users: "uživatelé", open: "Detail dílu",
+  },
 };
 
 export default cs;

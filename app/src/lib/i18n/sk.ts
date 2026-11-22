@@ -189,6 +189,13 @@ const sk = {
   },
   promo: { label: "Reklama" },
   more: { pick: "Čo dnes?", calendar: "Kalendár", platforms: "Platformy", stats: "Moje štatistiky", together: "Pozerajte spolu" },
+  episode: {
+    metaTitle: "{show} {code}: {name}", metaDesc: "{show}, {season}. sezóna, {episode}. epizóda: {name}. Popis, hodnotenie a kde pozerať.",
+    season: "{n}. sezóna", episode: "{n}. epizóda", back: "Späť na seriál", prev: "Predchádzajúca", next: "Ďalšia",
+    guests: "Hosťujúce hviezdy", directedBy: "Réžia", writtenBy: "Scenár", rating: "Hodnotenie epizódy", yourRating: "Tvoje hodnotenie epizódy",
+    watched: "Pozreté", markWatched: "Označiť ako pozreté", aired: "Vysielané", notAired: "Ešte nevyšlo", noOverview: "Popis epizódy zatiaľ nie je k dispozícii.",
+    reviews: "Recenzie epizódy", users: "užívatelia", open: "Detail epizódy",
+  },
 };
 
 export default sk;

@@ -6,7 +6,7 @@ import { toast } from "./toast";
 
 export type ReviewRow = { id: number; nickname: string | null; body: string; date: string; rating: number | null; mine: boolean; status: string };
 
-export default function Reviews({ titleId, reviews, mine }: { titleId: number; reviews: ReviewRow[]; mine: ReviewRow | null }) {
+export default function Reviews({ titleId, reviews, mine, season = 0, episode = 0 }: { titleId: number; reviews: ReviewRow[]; mine: ReviewRow | null; season?: number; episode?: number }) {
   const { d } = useI18n();
   const r = d.reviews;
   const [open, setOpen] = useState(false);
@@ -21,7 +21,7 @@ export default function Reviews({ titleId, reviews, mine }: { titleId: number; r
     e.preventDefault();
     if (body.trim().length < 20) return toast(r.tooShort);
     setBusy(true);
-    const res = await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ titleId, nickname: nick, body }) }).catch(() => null);
+    const res = await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ titleId, season, episode, nickname: nick, body }) }).catch(() => null);
     setBusy(false);
     const j = await res?.json().catch(() => ({}));
     if (!res?.ok) return toast(j?.error === "limit" ? r.limit : j?.error === "short" ? r.tooShort : d.follow.saveError);
@@ -35,7 +35,7 @@ export default function Reviews({ titleId, reviews, mine }: { titleId: number; r
     toast(r.reported);
   }
   async function remove() {
-    await fetch("/api/reviews", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ titleId }) }).catch(() => null);
+    await fetch("/api/reviews", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ titleId, season, episode }) }).catch(() => null);
     toast(r.deleted);
     start(() => router.refresh());
   }

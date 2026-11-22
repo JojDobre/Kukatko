@@ -118,5 +118,10 @@ export async function seedDemo() {
     ('movie', 35, 'sk', 'Komédia'), ('movie', 16, 'sk', 'Animovaný'), ('movie', 10751, 'sk', 'Rodinný'), ('movie', 10749, 'sk', 'Romantický'),
     ('tv', 18, 'en', 'Drama'), ('tv', 35, 'en', 'Comedy'), ('movie', 18, 'en', 'Drama'), ('movie', 35, 'en', 'Comedy')
   ) v ON CONFLICT DO NOTHING`;
+  // Popisy a hodnotenia epizód (vymyslené), aby stránky epizód neboli prázdne.
+  await sql`UPDATE episodes SET overviews = jsonb_build_object('sk', 'Ukážkový popis epizódy ' || episode || '. sezóny ' || season || '.', 'en', 'Demo synopsis.'),
+    tmdb_rating = 7 + (episode % 3) * 0.6, tmdb_votes = 25, directors = ARRAY['Demo Režisér'], writers = ARRAY['Demo Scenárista'],
+    guests = '[{"id": 995001, "name": "Hosť Ukážkový", "character": "Sused", "profile_path": null}]'::jsonb
+    WHERE title_id IN (SELECT id FROM titles WHERE tmdb_id > 900000)`;
   console.log(`Vložených ${TV.length} ukážkových seriálov a ${MOVIES.length} filmov. Zmažeš ich: DELETE FROM titles WHERE tmdb_id > 900000;`);
 }

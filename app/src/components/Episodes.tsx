@@ -1,15 +1,19 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { Check } from "./icons";
 import { useI18n } from "./I18n";
 import { toast } from "./toast";
 
-export type EpRow = { season: number; episode: number; name: string | null; air_date: string | null; watched: boolean };
+export type EpRow = { season: number; episode: number; name: string | null; air_date: string | null; watched: boolean; still_path: string | null; score: number | null };
 
-/** Zoznam epizód so sezónami a odškrtávaním pozretých. */
-export default function Episodes({ titleId, eps, startSeason, today, canTrack, dateFmt }: {
-  titleId: number; eps: EpRow[]; startSeason: number; today: string; canTrack: boolean; dateFmt: Record<string, string>;
+const code = (s: number, e: number) => `S${String(s).padStart(2, "0")}E${String(e).padStart(2, "0")}`;
+const tone = (v: number) => (v >= 80 ? "var(--good)" : v >= 65 ? "var(--mid)" : "var(--low)");
+
+/** Zoznam epizód so sezónami, obrázkami, skóre a odškrtávaním pozretých. */
+export default function Episodes({ titleId, base, eps, startSeason, today, dateFmt }: {
+  titleId: number; base: string; eps: EpRow[]; startSeason: number; today: string; dateFmt: Record<string, string>;
 }) {
   const { d, fmt } = useI18n();
   const w = d.watched;
@@ -52,30 +56,36 @@ export default function Episodes({ titleId, eps, startSeason, today, canTrack, d
           {seasons.map((s) => <button key={s} role="tab" aria-selected={s === season} aria-pressed={s === season} onClick={() => setSeason(s)}>{s}</button>)}
         </div>
       )}
-      {canTrack && airedAll.length > 0 && (
+      {airedAll.length > 0 && done > 0 && (
         <div className="progress">
           <div className="bar"><i style={{ width: `${(done / airedAll.length) * 100}%` }} /></div>
-          <small className="muted">{fmt(w.progress, { w: done, t: airedAll.length })} · {next ? fmt(w.continueWith, { ep: `S${String(next.season).padStart(2, "0")}E${String(next.episode).padStart(2, "0")}` }) : w.allWatched}</small>
+          <small className="muted">{fmt(w.progress, { w: done, t: airedAll.length })} · {next ? fmt(w.continueWith, { ep: code(next.season, next.episode) }) : w.allWatched}</small>
         </div>
       )}
-      <div>
+      <div className="eplist">
         {list.map((e) => {
           const k = `${e.season}:${e.episode}`;
           const on = state.has(k);
           const up = !aired(e);
+          const href = `${base}/season/${e.season}/episode/${e.episode}`;
           return (
-            <div key={k} className={`ep${up ? " up" : ""}${on ? " seen" : ""}`}>
-              {canTrack && !up
-                ? <button className="epck" role="checkbox" aria-checked={on} aria-label={`${w.mark}: E${e.episode}`} onClick={() => toggle(e)}>{on && <Check />}</button>
-                : <span className="mono">E{String(e.episode).padStart(2, "0")}</span>}
-              <span>{canTrack && !up ? <span className="mono muted" style={{ marginRight: 8 }}>E{String(e.episode).padStart(2, "0")}</span> : null}{e.name ?? `E${e.episode}`}</span>
-              <span className="mono">{e.air_date ? dateFmt[e.air_date] ?? e.air_date : "–"}</span>
+            <div key={k} className={`eprow${up ? " up" : ""}${on ? " seen" : ""}`}>
+              <Link href={href} className="epthumb" aria-hidden="true" tabIndex={-1}>
+                {e.still_path ? <img src={`https://image.tmdb.org/t/p/w185${e.still_path}`} alt="" loading="lazy" /> : <span className="mono">{e.episode}</span>}
+              </Link>
+              <Link href={href} className="epname">
+                <span className="eptitle"><span className="mono muted">E{String(e.episode).padStart(2, "0")}</span> {e.name ?? `${d.title.episodes} ${e.episode}`}</span>
+                <small className="mono">{e.air_date ? dateFmt[e.air_date] ?? e.air_date : "–"}{up ? ` · ${w.notAired}` : ""}</small>
+              </Link>
+              {e.score != null && <span className="epscore mono" style={{ color: tone(e.score) }}>{e.score}</span>}
+              {!up
+                ? <button className="epck" role="checkbox" aria-checked={on} aria-label={`${w.mark}: ${code(e.season, e.episode)}`} onClick={() => toggle(e)}>{on && <Check />}</button>
+                : <span className="epck ghost" aria-hidden="true" />}
             </div>
           );
         })}
       </div>
-      {canTrack && seasonAired.length > 0 && <button className="btn soft" onClick={toggleSeason}>{seasonDone ? w.unmarkSeason : w.markSeason}</button>}
-      {!canTrack && <small className="muted">{w.followToTrack}</small>}
+      {seasonAired.length > 0 && <button className="btn soft" onClick={toggleSeason}>{seasonDone ? w.unmarkSeason : w.markSeason}</button>}
     </>
   );
 }

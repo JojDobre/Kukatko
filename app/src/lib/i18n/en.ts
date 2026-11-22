@@ -190,6 +190,13 @@ const en: Dict = {
   },
   promo: { label: "Ad" },
   more: { pick: "Tonight?", calendar: "Calendar", platforms: "Services", stats: "My stats", together: "Watch together" },
+  episode: {
+    metaTitle: "{show} {code}: {name}", metaDesc: "{show}, season {season}, episode {episode}: {name}. Synopsis, ratings and where to watch.",
+    season: "Season {n}", episode: "Episode {n}", back: "Back to the series", prev: "Previous", next: "Next",
+    guests: "Guest stars", directedBy: "Directed by", writtenBy: "Written by", rating: "Episode rating", yourRating: "Your episode rating",
+    watched: "Watched", markWatched: "Mark as watched", aired: "Aired", notAired: "Not out yet", noOverview: "No episode synopsis available yet.",
+    reviews: "Episode reviews", users: "users", open: "Episode details",
+  },
 };
 
 export default en;

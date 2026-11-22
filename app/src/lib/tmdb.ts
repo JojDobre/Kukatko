@@ -53,8 +53,14 @@ export function titleDetails(kind: Kind, id: number) {
   });
 }
 
+export type TmdbEpisode = {
+  episode_number: number; name: string; overview?: string; air_date: string | null; runtime: number | null;
+  still_path?: string | null; vote_average?: number; vote_count?: number;
+  crew?: { job: string; name: string }[]; guest_stars?: { id: number; name: string; character?: string; profile_path?: string | null; order?: number }[];
+};
+
 export function seasonDetails(id: number, season: number, lang: Lang) {
-  return tmdb<{ episodes: { episode_number: number; name: string; air_date: string | null; runtime: number | null }[] }>(
+  return tmdb<{ episodes: TmdbEpisode[] }>(
     `/tv/${id}/season/${season}`,
     { language: ALL_LOCALES[lang].tmdb },
   );
@@ -216,4 +222,39 @@ export function mapPerson(d: any, langs: Lang[] = LANGS): PersonRow {
     birthday: d.birthday || null, deathday: d.deathday || null, birthplace: d.place_of_birth || null,
     known_for: d.known_for_department || null, bio, popularity: Number(d.popularity ?? 0), credits: credits.slice(0, 80),
   };
+}
+
+export type EpisodeRow = {
+  episode: number; air_date: string | null; runtime: number | null; names: Record<string, string>; overviews: Record<string, string>;
+  still_path: string | null; tmdb_rating: number | null; tmdb_votes: number; directors: string[]; writers: string[];
+  guests: { id: number; name: string; character: string | null; profile_path: string | null }[];
+};
+
+// TMDB vracia „Episode 3“ / „Epizoda 3“, keď preklad chýba. Taký názov neukladáme.
+const GENERIC_NAME = /^(episode|epizóda|epizoda|odcinek|epizód|folge|rész|díl)\s*\d+$/i;
+
+/** Zlúči odpovede jednej sezóny v rôznych jazykoch do riadkov tabuľky `episodes`. Čistá funkcia. */
+export function mergeSeason(perLang: { lang: string; episodes: TmdbEpisode[] }[]): EpisodeRow[] {
+  const out = new Map<number, EpisodeRow>();
+  for (const { lang, episodes } of perLang) {
+    for (const e of episodes) {
+      let row = out.get(e.episode_number);
+      if (!row) {
+        row = {
+          episode: e.episode_number, air_date: e.air_date || null, runtime: e.runtime ?? null, names: {}, overviews: {},
+          still_path: e.still_path ?? null, tmdb_rating: e.vote_count ? Number(e.vote_average) : null, tmdb_votes: e.vote_count ?? 0,
+          directors: [...new Set((e.crew ?? []).filter((c) => c.job === "Director").map((c) => c.name))],
+          writers: [...new Set((e.crew ?? []).filter((c) => c.job === "Writer" || c.job === "Screenplay" || c.job === "Teleplay").map((c) => c.name))],
+          guests: [...(e.guest_stars ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).slice(0, 12)
+            .map((g) => ({ id: g.id, name: g.name, character: g.character || null, profile_path: g.profile_path ?? null })),
+        };
+        out.set(e.episode_number, row);
+      }
+      if (e.name && !GENERIC_NAME.test(e.name.trim())) row.names[lang] = e.name;
+      // TMDB pri chýbajúcom preklade popisu vracia prázdny text.
+      if (e.overview?.trim()) row.overviews[lang] = e.overview.trim();
+      row.still_path ??= e.still_path ?? null;
+    }
+  }
+  return [...out.values()].sort((a, b) => a.episode - b.episode);
 }

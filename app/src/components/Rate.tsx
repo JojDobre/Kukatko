@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { toast } from "./toast";
 import { useI18n } from "./I18n";
 
-export default function Rate({ titleId, initial }: { titleId: number; initial: number | null }) {
+/** Hodnotenie 1–10. Pre epizódu: endpoint="/api/rate-episode" a extra={{ season, episode }}. */
+export default function Rate({ titleId, initial, endpoint = "/api/rate", extra = {} }: { titleId: number; initial: number | null; endpoint?: string; extra?: Record<string, number> }) {
   const [v, setV] = useState(initial);
   const [, start] = useTransition();
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function Rate({ titleId, initial }: { titleId: number; initial: n
     const next = v === n ? null : n;
     const prev = v;
     setV(next);
-    const res = await fetch("/api/rate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ titleId, value: next }) }).catch(() => null);
+    const res = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ titleId, ...extra, value: next }) }).catch(() => null);
     if (!res?.ok) { setV(prev); return toast(d.title.rateError); }
     toast(next ? fmt(d.title.rateSaved, { n: next }) : d.title.rateRemoved);
     start(() => router.refresh());

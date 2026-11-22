@@ -24,7 +24,8 @@ app/
 - **Rebríčky** (`/charts`): vychádza tento týždeň, nové na platformách, najlepšie seriály a filmy, zmizlo z platforiem, plus rebríčky pre každú väčšiu platformu. Obnovujú sa každý deň.
 - **Stránky hercov a tvorcov** so životopisom a tým, čo sa od nich dá pozrieť.
 - **Zvonček a upozornenia:** nová epizóda, ohlásená sezóna, titul pribudol na platformu alebo z nej zmizol (v krajine užívateľa). Prémiové zariadenia dostanú aj pripomienku večer pred vydaním epizódy.
-- **Pozreté epizódy:** odškrtávanie po epizódach aj celých sezónach a sekcia „Pozerám“ s tým, čo je na rade.
+- **Pozreté epizódy:** odškrtávanie po epizódach aj celých sezónach (netreba seriál sledovať) a sekcia „Pozerám“ s tým, čo je na rade.
+- **Stránky epizód** (`/tv/…/season/3/episode/9`): obrázok zo scény, popis vo všetkých jazykoch, réžia, scenár, hosťujúce hviezdy, hodnotenie z TMDB aj od užívateľov, vlastné hodnotenie 1–10, recenzie epizódy, tlačidlo „Pozreté“, predchádzajúca a ďalšia epizóda a obrázok na zdieľanie. Zoznam epizód v detaile seriálu ukazuje obrázky a skóre každej epizódy.
 - **Prenos na iné zariadenie** QR kódom alebo 6-miestnym kódom. Bez registrácie.
 - **Recenzie** s moderovaním: texty s odkazmi alebo hrubými slovami čakajú na schválenie, po 3 nahláseniach sa recenzia skryje. Na deň max. 5 recenzií z jedného zariadenia.
 - **Administrácia** (`/admin`): schvaľovanie recenzií, štatistika klikov na platformy, stav robota.

@@ -258,3 +258,9 @@ export function sitemapTitles(lang: Lang, offset: number, limit: number) {
 export function sitemapPeople(limit: number) {
   return sql<{ id: number; slug: string; synced_at: Date }[]>`SELECT id, slug, synced_at FROM people ORDER BY popularity DESC LIMIT ${limit}`;
 }
+
+/** Karty podľa id (napr. rozpozerané seriály, ktoré užívateľ nesleduje). */
+export function cardsByIds(c: Ctx, ids: number[]) {
+  if (!ids.length) return Promise.resolve([] as Card[]);
+  return sql<Card[]>`SELECT ${card(c)} FROM titles t WHERE t.id = ANY(${ids}::int[])`;
+}

@@ -190,6 +190,13 @@ const de: Dict = {
   },
   promo: { label: "Anzeige" },
   more: { pick: "Heute?", calendar: "Kalender", platforms: "Dienste", stats: "Meine Statistik", together: "Gemeinsam schauen" },
+  episode: {
+    metaTitle: "{show} {code}: {name}", metaDesc: "{show}, Staffel {season}, Folge {episode}: {name}. Inhalt, Bewertungen und wo streamen.",
+    season: "Staffel {n}", episode: "Folge {n}", back: "Zurück zur Serie", prev: "Vorherige", next: "Nächste",
+    guests: "Gaststars", directedBy: "Regie", writtenBy: "Drehbuch", rating: "Bewertung der Folge", yourRating: "Deine Bewertung der Folge",
+    watched: "Gesehen", markWatched: "Als gesehen markieren", aired: "Ausgestrahlt", notAired: "Noch nicht erschienen", noOverview: "Noch keine Inhaltsangabe verfügbar.",
+    reviews: "Rezensionen zur Folge", users: "Nutzer", open: "Details zur Folge",
+  },
 };
 
 export default de;

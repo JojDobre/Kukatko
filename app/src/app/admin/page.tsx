@@ -23,7 +23,8 @@ export default async function Admin() {
     SELECT id, label, headline, url, langs, starts_at, ends_at, active, impressions, clicks FROM promos ORDER BY created_at DESC LIMIT 50`;
   const [queue, clicksByProv, topTitles, state, counts] = await Promise.all([
     sql<{ id: number; body: string; nickname: string | null; status: string; reports: number; created_at: Date; name: string; lang: string }[]>`
-      SELECT r.id, r.body, r.nickname, r.status, r.reports, r.created_at, r.lang, t.original_name AS name
+      SELECT r.id, r.body, r.nickname, r.status, r.reports, r.created_at, r.lang,
+        t.original_name || CASE WHEN r.season > 0 THEN ' · S' || lpad(r.season::text, 2, '0') || 'E' || lpad(r.episode::text, 2, '0') ELSE '' END AS name
       FROM reviews r JOIN titles t ON t.id = r.title_id
       WHERE r.status = 'pending' OR r.reports > 0 OR r.created_at > now() - interval '2 days'
       ORDER BY (r.status = 'pending') DESC, r.reports DESC, r.created_at DESC LIMIT 100`,

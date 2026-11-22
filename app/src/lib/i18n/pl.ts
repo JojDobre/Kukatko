@@ -190,6 +190,13 @@ const pl: Dict = {
   },
   promo: { label: "Reklama" },
   more: { pick: "Co dziś?", calendar: "Kalendarz", platforms: "Serwisy", stats: "Moje statystyki", together: "Oglądajcie razem" },
+  episode: {
+    metaTitle: "{show} {code}: {name}", metaDesc: "{show}, sezon {season}, odcinek {episode}: {name}. Opis, oceny i gdzie obejrzeć.",
+    season: "Sezon {n}", episode: "Odcinek {n}", back: "Wróć do serialu", prev: "Poprzedni", next: "Następny",
+    guests: "Gościnnie", directedBy: "Reżyseria", writtenBy: "Scenariusz", rating: "Ocena odcinka", yourRating: "Twoja ocena odcinka",
+    watched: "Obejrzane", markWatched: "Oznacz jako obejrzane", aired: "Emisja", notAired: "Jeszcze nie wyszło", noOverview: "Opis odcinka nie jest jeszcze dostępny.",
+    reviews: "Recenzje odcinka", users: "użytkownicy", open: "Szczegóły odcinka",
+  },
 };
 
 export default pl;

@@ -6,8 +6,8 @@ import { sql } from "./db";
 import { slugify } from "./format";
 import { LANGS, REGIONS } from "./locales";
 import {
-  genreList, mapPerson, mapTitle, personDetails, seasonDetails, titleDetails,
-  type Kind, type TitleRow,
+  genreList, mapPerson, mapTitle, mergeSeason, personDetails, seasonDetails, titleDetails,
+  type Kind, type TitleRow, type TmdbEpisode,
 } from "./tmdb";
 
 export const log = (...a: unknown[]) => console.log(new Date().toISOString(), ...a);
@@ -85,26 +85,23 @@ export async function markRemoved() {
 /** Stiahne epizódy vybraných sezón vo všetkých zapnutých jazykoch. */
 export async function syncSeasons(titleId: number, tmdbId: number, seasons: number[]) {
   for (const season of seasons) {
-    const names = new Map<number, { air_date: string | null; runtime: number | null; names: Record<string, string> }>();
+    const perLang: { lang: string; episodes: TmdbEpisode[] }[] = [];
     for (const lang of LANGS) {
       try {
-        const s = await seasonDetails(tmdbId, season, lang);
-        for (const e of s.episodes) {
-          const row = names.get(e.episode_number) ?? { air_date: e.air_date || null, runtime: e.runtime ?? null, names: {} };
-          // TMDB vracia „Episode 3“ / „Epizoda 3“, keď preklad chýba. Taký názov neukladáme.
-          if (e.name && !/^(episode|epizóda|epizoda|odcinek|epizód|folge|rész)\s*\d+$/i.test(e.name.trim())) row.names[lang] = e.name;
-          names.set(e.episode_number, row);
-        }
+        perLang.push({ lang, episodes: (await seasonDetails(tmdbId, season, lang)).episodes });
       } catch (e: any) {
         if (e?.status === 404) break;
         throw e;
       }
     }
-    for (const [episode, v] of names) {
-      await sql`INSERT INTO episodes (title_id, season, episode, air_date, runtime, names)
-        VALUES (${titleId}, ${season}, ${episode}, ${v.air_date}, ${v.runtime}, ${sql.json(v.names)})
+    for (const v of mergeSeason(perLang)) {
+      await sql`INSERT INTO episodes (title_id, season, episode, air_date, runtime, names, overviews, still_path, tmdb_rating, tmdb_votes, directors, writers, guests)
+        VALUES (${titleId}, ${season}, ${v.episode}, ${v.air_date}, ${v.runtime}, ${sql.json(v.names)}, ${sql.json(v.overviews)}, ${v.still_path},
+          ${v.tmdb_rating}, ${v.tmdb_votes}, ${v.directors}, ${v.writers}, ${sql.json(v.guests)})
         ON CONFLICT (title_id, season, episode) DO UPDATE SET air_date = EXCLUDED.air_date, runtime = EXCLUDED.runtime,
-          names = episodes.names || EXCLUDED.names`;
+          names = episodes.names || EXCLUDED.names, overviews = episodes.overviews || EXCLUDED.overviews,
+          still_path = COALESCE(EXCLUDED.still_path, episodes.still_path), tmdb_rating = EXCLUDED.tmdb_rating, tmdb_votes = EXCLUDED.tmdb_votes,
+          directors = EXCLUDED.directors, writers = EXCLUDED.writers, guests = EXCLUDED.guests`;
     }
   }
 }
@@ -119,6 +116,14 @@ export async function syncTitle(kind: Kind, tmdbId: number) {
     if (season) await syncSeasons(id, tmdbId, [season]).catch((e) => log(`Sezóna ${season} (${tmdbId}):`, e.message));
   }
   return id;
+}
+
+const running = new Set<number>();
+/** Ako syncAllSeasons, ale ten istý seriál nesťahuje dvakrát naraz (napr. pri viacerých návštevníkoch). */
+export async function syncAllSeasonsOnce(titleId: number) {
+  if (running.has(titleId) || running.size >= 4) return;
+  running.add(titleId);
+  try { await syncAllSeasons(titleId); } finally { running.delete(titleId); }
 }
 
 /** Všetky sezóny seriálu (pre sledovanie pozretých epizód). */

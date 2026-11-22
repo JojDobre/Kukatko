@@ -41,8 +41,12 @@ export async function PUT(req: Request) {
         await tx`INSERT INTO watched (device_id, title_id, season, episode, created_at) SELECT ${target}, title_id, season, episode, created_at FROM watched WHERE device_id = ${dev} ON CONFLICT DO NOTHING`;
         const touched = await tx<{ title_id: number }[]>`INSERT INTO ratings (device_id, title_id, value, created_at)
           SELECT ${target}, title_id, value, created_at FROM ratings WHERE device_id = ${dev} ON CONFLICT DO NOTHING RETURNING title_id`;
-        await tx`UPDATE reviews SET device_id = ${target} WHERE device_id = ${dev}
-          AND title_id NOT IN (SELECT title_id FROM reviews WHERE device_id = ${target})`;
+        await tx`UPDATE reviews r SET device_id = ${target} WHERE r.device_id = ${dev}
+          AND NOT EXISTS (SELECT 1 FROM reviews x WHERE x.device_id = ${target} AND x.title_id = r.title_id AND x.season = r.season AND x.episode = r.episode)`;
+        await tx`INSERT INTO episode_ratings (device_id, title_id, season, episode, value, created_at)
+          SELECT ${target}, title_id, season, episode, value, created_at FROM episode_ratings WHERE device_id = ${dev} ON CONFLICT DO NOTHING`;
+        await tx`INSERT INTO want (device_id, title_id, created_at) SELECT ${target}, title_id, created_at FROM want WHERE device_id = ${dev} ON CONFLICT DO NOTHING`;
+        await tx`INSERT INTO hidden (device_id, title_id, created_at) SELECT ${target}, title_id, created_at FROM hidden WHERE device_id = ${dev} ON CONFLICT DO NOTHING`;
         await tx`UPDATE push_subscriptions SET device_id = ${target} WHERE device_id = ${dev}`;
         await tx`UPDATE devices t SET
             premium_until = GREATEST(t.premium_until, s.premium_until),
@@ -52,6 +56,9 @@ export async function PUT(req: Request) {
         const old = await tx<{ title_id: number }[]>`SELECT title_id FROM ratings WHERE device_id = ${dev}`;
         await tx`DELETE FROM devices WHERE id = ${dev}`;
         const ids = [...new Set([...touched, ...old].map((r) => r.title_id))];
+        await tx`UPDATE episodes e SET (user_avg, user_count) = (SELECT avg(value)::real, count(*)::int FROM episode_ratings r
+          WHERE r.title_id = e.title_id AND r.season = e.season AND r.episode = e.episode)
+          WHERE e.user_count > 0 OR (e.title_id, e.season, e.episode) IN (SELECT title_id, season, episode FROM episode_ratings WHERE device_id = ${target})`;
         if (ids.length) await tx`UPDATE titles t SET (user_avg, user_count) = (SELECT avg(value)::real, count(*)::int FROM ratings r WHERE r.title_id = t.id)
           WHERE t.id = ANY(${ids}::int[])`;
       });

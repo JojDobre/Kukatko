@@ -190,6 +190,13 @@ const hu: Dict = {
   },
   promo: { label: "Hirdetés" },
   more: { pick: "Mit ma?", calendar: "Naptár", platforms: "Szolgáltatások", stats: "Statisztikáim", together: "Nézzétek együtt" },
+  episode: {
+    metaTitle: "{show} {code}: {name}", metaDesc: "{show}, {season}. évad, {episode}. rész: {name}. Leírás, értékelés és hol nézhető.",
+    season: "{n}. évad", episode: "{n}. rész", back: "Vissza a sorozathoz", prev: "Előző", next: "Következő",
+    guests: "Vendégszereplők", directedBy: "Rendező", writtenBy: "Forgatókönyv", rating: "Az epizód értékelése", yourRating: "Az értékelésed",
+    watched: "Megnézve", markWatched: "Megjelölés megnézettként", aired: "Adásba került", notAired: "Még nem jelent meg", noOverview: "Az epizód leírása még nem érhető el.",
+    reviews: "Vélemények az epizódról", users: "felhasználók", open: "Az epizód részletei",
+  },
 };
 
 export default hu;

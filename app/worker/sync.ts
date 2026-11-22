@@ -85,7 +85,7 @@ export async function hourlySync() {
 export async function syncFollowedSeasons(limit = 200) {
   const rows = await sql<{ id: number }[]>`
     SELECT t.id FROM titles t
-    WHERE t.kind = 'tv' AND t.id IN (SELECT DISTINCT title_id FROM follows)
+    WHERE t.kind = 'tv' AND (t.id IN (SELECT DISTINCT title_id FROM follows) OR t.id IN (SELECT DISTINCT title_id FROM watched WHERE season > 0))
       AND (t.seasons_synced_at IS NULL OR t.seasons_synced_at < now() - interval '7 days')
     ORDER BY t.seasons_synced_at NULLS FIRST LIMIT ${limit}`;
   await pool(rows, 4, async (r) => {
