@@ -1,139 +1,227 @@
 import { sql } from "./db";
-import { todayISO } from "./format";
-import type { Ep } from "./tmdb";
+import { addDaysISO, todayISO } from "./format";
+import type { Lang } from "./locales";
+import type { Ep, Kind, Provider, Texts } from "./tmdb";
 
-export type Show = {
-  id: number; slug: string; name: string; original_name: string | null; overview: string | null; tagline: string | null;
-  poster_path: string | null; backdrop_path: string | null; first_air_date: string | null; year: number | null;
-  status: string | null; genres: string[]; seasons: number | null; episodes: number | null; creators: string[];
-  cast: { name: string; character: string | null; profile_path: string | null }[];
-  providers: { id: number; name: string; logo_path: string | null; type: string }[];
-  watch_link: string | null; next_ep: Ep | null; next_air_date: string | null; last_ep: Ep | null;
-  current_season: { episode: number; name: string; air_date: string | null }[] | null;
-  trailer_key: string | null; tmdb_rating: number | null; tmdb_votes: number; imdb_id: string | null;
-  imdb_rating: number | null; rt_rating: number | null; user_avg: number | null; user_count: number; score: number | null;
+export type Ctx = { lang: Lang; region: string };
+
+export type Card = {
+  id: number; kind: Kind; tmdb_id: number; name: string; slug: string; overview: string | null;
+  poster_path: string | null; backdrop_path: string | null; year: number | null; genre_ids: number[]; seasons: number | null;
+  providers: Provider[]; next_ep: Ep | null; next_ep_name: string | null; next_air_date: string | null;
+  tmdb_rating: number | null; tmdb_votes: number; imdb_rating: number | null; rt_rating: number | null;
+  user_avg: number | null; user_count: number; score: number | null;
 };
 
-/** Stĺpce pre karty v mriežke (bez ťažkých polí). */
-const card = () => sql`id, slug, name, poster_path, backdrop_path, year, genres, seasons, providers, next_ep,
-  next_air_date, tmdb_rating, tmdb_votes, imdb_rating, rt_rating,
-  user_avg, user_count, score, overview`;
+export type TitleFull = {
+  id: number; kind: Kind; tmdb_id: number; original_name: string; original_language: string | null;
+  i18n: Partial<Record<Lang, Texts>>; poster_path: string | null; backdrop_path: string | null; release_date: string | null;
+  year: number | null; status: string | null; genre_ids: number[]; seasons: number | null; episodes: number | null; runtime: number | null;
+  creators: string[]; cast: { id: number; name: string; character: string | null; profile_path: string | null }[];
+  providers: Record<string, Provider[]>; watch_links: Record<string, string>; trailers: Partial<Record<Lang, string>>;
+  next_ep: Ep | null; next_air_date: string | null; last_ep: Ep | null; tmdb_rating: number | null; tmdb_votes: number;
+  imdb_id: string | null; imdb_rating: number | null; rt_rating: number | null; user_avg: number | null; user_count: number;
+  score: number | null; seasons_synced_at: Date | null;
+};
 
-export type Card = Pick<Show, "id" | "slug" | "name" | "poster_path" | "backdrop_path" | "year" | "genres" | "seasons" |
-  "providers" | "next_ep" | "next_air_date" | "tmdb_rating" | "tmdb_votes" | "imdb_rating" | "rt_rating" |
-  "user_avg" | "user_count" | "score" | "overview">;
+/** Texty titulu v jazyku (s náhradou angličtinou a originálom). */
+export function texts(t: Pick<TitleFull, "i18n" | "original_name">, lang: Lang): Texts {
+  return t.i18n[lang] ?? t.i18n.en ?? Object.values(t.i18n)[0] ?? { name: t.original_name, overview: null, tagline: null, slug: "titul" };
+}
+
+/** Stĺpce pre karty v mriežke, už preložené a s platformami pre región. */
+const card = (c: Ctx) => sql`t.id, t.kind, t.tmdb_id,
+  coalesce(t.i18n->${c.lang}->>'name', t.i18n->'en'->>'name', t.original_name) AS name,
+  coalesce(t.i18n->${c.lang}->>'slug', t.i18n->'en'->>'slug', 'titul') AS slug,
+  coalesce(t.i18n->${c.lang}->>'overview', t.i18n->'en'->>'overview') AS overview,
+  t.poster_path, t.backdrop_path, t.year, t.genre_ids, t.seasons, coalesce(t.providers->${c.region}, '[]'::jsonb) AS providers,
+  t.next_ep, t.next_air_date, t.tmdb_rating, t.tmdb_votes, t.imdb_rating, t.rt_rating, t.user_avg, t.user_count, t.score,
+  (SELECT e.names->>${c.lang} FROM episodes e WHERE e.title_id = t.id
+     AND e.season = (t.next_ep->>'season')::int AND e.episode = (t.next_ep->>'episode')::int) AS next_ep_name`;
+
+const inRegion = (c: Ctx) => sql`${c.region} = ANY(t.regions)`;
+const onProviders = (c: Ctx, providers: number[]) =>
+  providers.length ? sql`AND t.provider_keys && ${providers.map((p) => `${c.region}:${p}`)}::text[]` : sql``;
 
 export const SORTS = {
-  score: { label: "Priemer", order: "score DESC NULLS LAST, popularity DESC" },
-  popular: { label: "Populárne", order: "popularity DESC" },
-  imdb: { label: "IMDb", order: "imdb_rating DESC NULLS LAST, imdb_votes DESC NULLS LAST" },
-  tmdb: { label: "TMDB", order: "(CASE WHEN tmdb_votes >= 20 THEN tmdb_rating END) DESC NULLS LAST, tmdb_votes DESC" },
-  rt: { label: "Rotten Tomatoes", order: "rt_rating DESC NULLS LAST, popularity DESC" },
-  users: { label: "Užívatelia", order: "(CASE WHEN user_count >= 5 THEN user_avg END) DESC NULLS LAST, user_count DESC" },
-  next: { label: "Najbližšia epizóda", order: "next_air_date ASC NULLS LAST, popularity DESC" },
-  new: { label: "Najnovšie", order: "first_air_date DESC NULLS LAST" },
+  score: "t.score DESC NULLS LAST, t.popularity DESC",
+  popular: "t.popularity DESC",
+  imdb: "t.imdb_rating DESC NULLS LAST, t.imdb_votes DESC NULLS LAST",
+  tmdb: "(CASE WHEN t.tmdb_votes >= 20 THEN t.tmdb_rating END) DESC NULLS LAST, t.tmdb_votes DESC",
+  rt: "t.rt_rating DESC NULLS LAST, t.popularity DESC",
+  users: "(CASE WHEN t.user_count >= 5 THEN t.user_avg END) DESC NULLS LAST, t.user_count DESC",
+  next: "t.next_air_date ASC NULLS LAST, t.popularity DESC",
+  new: "t.release_date DESC NULLS LAST",
 } as const;
 export type SortKey = keyof typeof SORTS;
-export const isSort = (s: any): s is SortKey => typeof s === "string" && s in SORTS;
+export const isSort = (s: unknown): s is SortKey => typeof s === "string" && s in SORTS;
+export const isKind = (s: unknown): s is Kind => s === "tv" || s === "movie";
 
 export const PAGE_SIZE = 30;
 
-export async function catalog(opts: { sort: SortKey; providers: number[]; genre: string | null; page: number }) {
-  const where = [sql`TRUE`];
-  if (opts.providers.length) where.push(sql`provider_ids && ${opts.providers}::int[]`);
-  if (opts.genre) where.push(sql`${opts.genre} = ANY(genres)`);
-  if (opts.sort === "next") where.push(sql`next_air_date >= ${todayISO()}`);
-  const cond = where.reduce((a, b) => sql`${a} AND ${b}`);
-  const offset = (Math.max(1, opts.page) - 1) * PAGE_SIZE;
+export async function catalog(c: Ctx, o: { kind: Kind; sort: SortKey; providers: number[]; genre: number | null; page: number }) {
+  const sort = o.kind === "movie" && o.sort === "next" ? "score" : o.sort;
+  const cond = sql`t.kind = ${o.kind} AND ${inRegion(c)} ${onProviders(c, o.providers)}
+    ${o.genre ? sql`AND ${o.genre} = ANY(t.genre_ids)` : sql``}
+    ${sort === "next" ? sql`AND t.next_air_date >= ${todayISO()}` : sql``}
+    ${sort === "new" ? sql`AND t.release_date <= ${todayISO()}` : sql``}`;
+  const offset = (Math.max(1, o.page) - 1) * PAGE_SIZE;
   const [rows, [{ count }]] = await Promise.all([
-    sql<Card[]>`SELECT ${card()} FROM shows WHERE ${cond}
-      ORDER BY ${sql.unsafe(SORTS[opts.sort].order)} LIMIT ${PAGE_SIZE} OFFSET ${offset}`,
-    sql<{ count: number }[]>`SELECT count(*)::int AS count FROM shows WHERE ${cond}`,
+    sql<Card[]>`SELECT ${card(c)} FROM titles t WHERE ${cond} ORDER BY ${sql.unsafe(SORTS[sort])} LIMIT ${PAGE_SIZE} OFFSET ${offset}`,
+    sql<{ count: number }[]>`SELECT count(*)::int AS count FROM titles t WHERE ${cond}`,
   ]);
   return { rows, total: count };
 }
 
-export async function upcoming(limit: number, providers: number[] = [], ids?: number[]) {
-  return sql<Card[]>`SELECT ${card()} FROM shows
-    WHERE next_air_date >= ${todayISO()}
-      ${providers.length ? sql`AND provider_ids && ${providers}::int[]` : sql``}
-      ${ids ? sql`AND id = ANY(${ids}::int[])` : sql``}
-    ORDER BY next_air_date, popularity DESC LIMIT ${limit}`;
+export function upcoming(c: Ctx, limit: number, providers: number[] = [], ids?: number[], days?: number) {
+  const today = todayISO();
+  return sql<Card[]>`SELECT ${card(c)} FROM titles t
+    WHERE t.kind = 'tv' AND t.next_air_date >= ${today} AND ${inRegion(c)} ${onProviders(c, providers)}
+      ${days != null ? sql`AND t.next_air_date <= ${addDaysISO(today, days)}` : sql``}
+      ${ids ? sql`AND t.id = ANY(${ids}::int[])` : sql``}
+    ORDER BY t.next_air_date, t.popularity DESC LIMIT ${limit}`;
 }
 
-export async function topRated(limit: number, providers: number[] = []) {
-  return sql<Card[]>`SELECT ${card()} FROM shows WHERE score IS NOT NULL
-      ${providers.length ? sql`AND provider_ids && ${providers}::int[]` : sql``}
-    ORDER BY score DESC, popularity DESC LIMIT ${limit}`;
+export function topRated(c: Ctx, kind: Kind | null, limit: number, providers: number[] = []) {
+  return sql<Card[]>`SELECT ${card(c)} FROM titles t
+    WHERE t.score IS NOT NULL AND ${inRegion(c)} ${kind ? sql`AND t.kind = ${kind}` : sql``} ${onProviders(c, providers)}
+      AND (t.tmdb_votes >= 50 OR t.imdb_votes >= 1000)
+    ORDER BY t.score DESC, t.popularity DESC LIMIT ${limit}`;
 }
 
-export async function providerList() {
-  return sql<{ id: number; name: string; logo_path: string | null; count: number }[]>`
-    SELECT (p->>'id')::int AS id, min(p->>'name') AS name, min(p->>'logo_path') AS logo_path, count(*)::int AS count
-    FROM shows, jsonb_array_elements(providers) p
-    GROUP BY 1 HAVING count(*) >= 3 ORDER BY count DESC LIMIT 20`;
+/** Novinky na platformách (titul sa objavil v posledných dňoch). */
+export function newArrivals(c: Ctx, o: { limit: number; providerId?: number; kind?: Kind; days?: number; providers?: number[] }) {
+  return sql<(Card & { added: Date; added_provider: number })[]>`
+    SELECT ${card(c)}, a.first_seen AS added, a.provider_id AS added_provider FROM (
+      SELECT DISTINCT ON (title_id) title_id, first_seen, provider_id FROM availability
+      WHERE region = ${c.region} AND NOT initial AND removed_at IS NULL
+        AND first_seen > now() - make_interval(days => ${o.days ?? 14})
+        ${o.providerId ? sql`AND provider_id = ${o.providerId}` : sql``}
+        ${o.providers?.length ? sql`AND provider_id = ANY(${o.providers}::int[])` : sql``}
+      ORDER BY title_id, first_seen DESC
+    ) a JOIN titles t ON t.id = a.title_id
+    ${o.kind ? sql`WHERE t.kind = ${o.kind}` : sql``}
+    ORDER BY a.first_seen DESC, t.popularity DESC LIMIT ${o.limit}`;
 }
 
-export async function genreList() {
-  return sql<{ genre: string; count: number }[]>`
-    SELECT g AS genre, count(*)::int AS count FROM shows, unnest(genres) g GROUP BY g ORDER BY g`;
+/** Tituly, ktoré nedávno zmizli z platformy. */
+export function removedRecently(c: Ctx, limit: number, days = 14) {
+  return sql<(Card & { removed: Date; removed_provider: string })[]>`
+    SELECT ${card(c)}, a.removed_at AS removed, p.name AS removed_provider FROM (
+      SELECT DISTINCT ON (title_id) title_id, removed_at, provider_id FROM availability
+      WHERE region = ${c.region} AND removed_at > now() - make_interval(days => ${days})
+      ORDER BY title_id, removed_at DESC
+    ) a JOIN titles t ON t.id = a.title_id JOIN providers p ON p.id = a.provider_id
+    ORDER BY a.removed_at DESC, t.popularity DESC LIMIT ${limit}`;
 }
 
-export async function getShow(id: number) {
-  const [s] = await sql<Show[]>`SELECT * FROM shows WHERE id = ${id}`;
-  return s ?? null;
+export function providerList(region: string, min = 3) {
+  return sql<{ id: number; name: string; logo_path: string | null; slug: string; count: number }[]>`
+    SELECT (p->>'id')::int AS id, min(p->>'name') AS name, min(p->>'logo_path') AS logo_path,
+      coalesce(min(pr.slug), min(p->>'name')) AS slug, count(*)::int AS count
+    FROM titles t, jsonb_array_elements(t.providers->${region}) p
+    LEFT JOIN providers pr ON pr.id = (p->>'id')::int
+    GROUP BY 1 HAVING count(*) >= ${min} ORDER BY count DESC LIMIT 20`;
 }
 
-export async function similar(show: Show, limit = 6) {
-  return sql<Card[]>`SELECT ${card()} FROM shows
-    WHERE id <> ${show.id} AND genres && ${show.genres}::text[]
-    ORDER BY cardinality(ARRAY(SELECT unnest(genres) INTERSECT SELECT unnest(${show.genres}::text[]))) DESC,
-             score DESC NULLS LAST LIMIT ${limit}`;
+export function genreList(c: Ctx, kind: Kind) {
+  return sql<{ id: number; name: string; count: number }[]>`
+    SELECT g.id, coalesce(gl.name, ge.name, g.id::text) AS name, g.count FROM (
+      SELECT unnest(genre_ids) AS id, count(*)::int AS count FROM titles t WHERE t.kind = ${kind} AND ${inRegion(c)} GROUP BY 1
+    ) g
+    LEFT JOIN genres gl ON gl.kind = ${kind} AND gl.id = g.id AND gl.lang = ${c.lang}
+    LEFT JOIN genres ge ON ge.kind = ${kind} AND ge.id = g.id AND ge.lang = 'en'
+    ORDER BY 2`;
 }
 
-export async function search(q: string, limit = 40) {
-  const like = `%${q.replace(/[%_\\]/g, (m) => "\\" + m)}%`;
-  return sql<Card[]>`SELECT ${card()} FROM shows
-    WHERE name ILIKE ${like} OR original_name ILIKE ${like}
-       OR EXISTS (SELECT 1 FROM jsonb_array_elements("cast") c WHERE c->>'name' ILIKE ${like})
-       OR EXISTS (SELECT 1 FROM unnest(genres) g WHERE g ILIKE ${like})
-    ORDER BY (name ILIKE ${q + "%"}) DESC, popularity DESC LIMIT ${limit}`;
+export async function genreNames(kind: Kind, ids: number[], lang: Lang): Promise<string[]> {
+  if (!ids.length) return [];
+  const rows = await sql<{ id: number; name: string }[]>`
+    SELECT id, name FROM genres WHERE kind = ${kind} AND id = ANY(${ids}::int[]) AND lang IN (${lang}, 'en')
+    ORDER BY (lang = ${lang}) DESC`;
+  const m = new Map<number, string>();
+  for (const r of rows) if (!m.has(r.id)) m.set(r.id, r.name);
+  return ids.map((i) => m.get(i)).filter((x): x is string => !!x);
+}
+
+export async function getTitle(kind: Kind, tmdbId: number) {
+  const [t] = await sql<TitleFull[]>`SELECT * FROM titles WHERE kind = ${kind} AND tmdb_id = ${tmdbId}`;
+  return t ?? null;
+}
+
+export function similar(t: TitleFull, c: Ctx, limit = 6) {
+  return sql<Card[]>`SELECT ${card(c)} FROM titles t
+    WHERE t.id <> ${t.id} AND t.kind = ${t.kind} AND t.genre_ids && ${t.genre_ids}::int[] AND ${inRegion(c)}
+    ORDER BY cardinality(ARRAY(SELECT unnest(t.genre_ids) INTERSECT SELECT unnest(${t.genre_ids}::int[]))) DESC,
+             t.score DESC NULLS LAST LIMIT ${limit}`;
+}
+
+const likeOf = (q: string) => `%${q.replace(/[%_\\]/g, (m) => "\\" + m)}%`;
+
+export function search(c: Ctx, q: string, limit = 40) {
+  const like = likeOf(q);
+  return sql<Card[]>`SELECT ${card(c)} FROM titles t
+    WHERE t.original_name ILIKE ${like}
+       OR EXISTS (SELECT 1 FROM jsonb_each(t.i18n) x WHERE x.value->>'name' ILIKE ${like})
+       OR EXISTS (SELECT 1 FROM jsonb_array_elements(t."cast") cc WHERE cc->>'name' ILIKE ${like})
+    ORDER BY (coalesce(t.i18n->${c.lang}->>'name', t.original_name) ILIKE ${q + "%"}) DESC,
+             (${c.region} = ANY(t.regions)) DESC, t.popularity DESC LIMIT ${limit}`;
+}
+
+export function searchPeople(q: string, limit = 12) {
+  return sql<{ id: number; name: string; profile_path: string | null; slug: string | null }[]>`
+    SELECT x.id, x.name, x.profile_path, p.slug FROM (
+      SELECT DISTINCT ON ((cc->>'id')::int) (cc->>'id')::int AS id, cc->>'name' AS name, cc->>'profile_path' AS profile_path, t.popularity
+      FROM titles t, jsonb_array_elements(t."cast") cc
+      WHERE cc->>'name' ILIKE ${likeOf(q)} AND cc ? 'id'
+      ORDER BY (cc->>'id')::int, t.popularity DESC
+    ) x LEFT JOIN people p ON p.id = x.id ORDER BY x.popularity DESC LIMIT ${limit}`;
 }
 
 export async function followedIds(deviceId: string | null): Promise<Set<number>> {
   if (!deviceId) return new Set();
-  const rows = await sql<{ show_id: number }[]>`SELECT show_id FROM follows WHERE device_id = ${deviceId}`;
-  return new Set(rows.map((r) => r.show_id));
+  const rows = await sql<{ title_id: number }[]>`SELECT title_id FROM follows WHERE device_id = ${deviceId}`;
+  return new Set(rows.map((r) => r.title_id));
 }
 
-export async function followed(deviceId: string) {
-  return sql<Card[]>`SELECT ${card()} FROM shows s JOIN follows f ON f.show_id = s.id
-    WHERE f.device_id = ${deviceId} ORDER BY s.next_air_date NULLS LAST, f.created_at DESC`;
+export function followed(c: Ctx, deviceId: string) {
+  return sql<Card[]>`SELECT ${card(c)} FROM titles t JOIN follows f ON f.title_id = t.id
+    WHERE f.device_id = ${deviceId} ORDER BY t.next_air_date NULLS LAST, f.created_at DESC`;
 }
 
-export async function recommended(deviceId: string | null, limit = 12) {
-  if (!deviceId) return topRated(limit);
+export function recommended(c: Ctx, deviceId: string | null, limit = 12) {
+  if (!deviceId) return topRated(c, null, limit);
   return sql<Card[]>`
-    WITH g AS (SELECT DISTINCT unnest(s.genres) AS genre FROM follows f JOIN shows s ON s.id = f.show_id WHERE f.device_id = ${deviceId})
-    SELECT ${card()} FROM shows
-    WHERE id NOT IN (SELECT show_id FROM follows WHERE device_id = ${deviceId})
-      AND (NOT EXISTS (SELECT 1 FROM g) OR genres && ARRAY(SELECT genre FROM g))
-    ORDER BY score DESC NULLS LAST, popularity DESC LIMIT ${limit}`;
+    WITH g AS (SELECT DISTINCT unnest(t.genre_ids) AS genre FROM follows f JOIN titles t ON t.id = f.title_id WHERE f.device_id = ${deviceId})
+    SELECT ${card(c)} FROM titles t
+    WHERE t.id NOT IN (SELECT title_id FROM follows WHERE device_id = ${deviceId}) AND ${inRegion(c)}
+      AND (t.tmdb_votes >= 50 OR t.imdb_votes >= 1000)
+      AND (NOT EXISTS (SELECT 1 FROM g) OR t.genre_ids && ARRAY(SELECT genre FROM g))
+    ORDER BY t.score DESC NULLS LAST, t.popularity DESC LIMIT ${limit}`;
 }
 
-export async function myRating(deviceId: string | null, showId: number) {
+export async function myRating(deviceId: string | null, titleId: number) {
   if (!deviceId) return null;
-  const [r] = await sql<{ value: number }[]>`SELECT value FROM ratings WHERE device_id = ${deviceId} AND show_id = ${showId}`;
+  const [r] = await sql<{ value: number }[]>`SELECT value FROM ratings WHERE device_id = ${deviceId} AND title_id = ${titleId}`;
   return r?.value ?? null;
 }
 
-export async function devicePrefs(deviceId: string | null) {
-  const def = { episodes: true, seasons: true };
-  if (!deviceId) return def;
-  const [r] = await sql<{ prefs: typeof def }[]>`SELECT prefs FROM devices WHERE id = ${deviceId}`;
-  return { ...def, ...(r?.prefs ?? {}) };
+export type Prefs = { episodes: boolean; seasons: boolean; availability: boolean; reminder: boolean };
+export const DEFAULT_PREFS: Prefs = { episodes: true, seasons: true, availability: true, reminder: true };
+
+export async function deviceInfo(deviceId: string | null) {
+  if (!deviceId) return { prefs: DEFAULT_PREFS, premiumUntil: null as Date | null, hasCustomer: false };
+  const [r] = await sql<{ prefs: Partial<Prefs>; premium_until: Date | null; stripe_customer: string | null }[]>`
+    SELECT prefs, premium_until, stripe_customer FROM devices WHERE id = ${deviceId}`;
+  return { prefs: { ...DEFAULT_PREFS, ...(r?.prefs ?? {}) }, premiumUntil: r?.premium_until ?? null, hasCustomer: !!r?.stripe_customer };
 }
 
-export async function sitemapRows() {
-  return sql<{ id: number; slug: string; synced_at: Date }[]>`SELECT id, slug, synced_at FROM shows ORDER BY popularity DESC LIMIT 20000`;
+export function sitemapTitles(lang: Lang, offset: number, limit: number) {
+  return sql<{ kind: Kind; tmdb_id: number; slug: string; synced_at: Date }[]>`
+    SELECT kind, tmdb_id, coalesce(i18n->${lang}->>'slug', i18n->'en'->>'slug', 'titul') AS slug, synced_at
+    FROM titles WHERE cardinality(regions) > 0 ORDER BY popularity DESC OFFSET ${offset} LIMIT ${limit}`;
+}
+
+export function sitemapPeople(limit: number) {
+  return sql<{ id: number; slug: string; synced_at: Date }[]>`SELECT id, slug, synced_at FROM people ORDER BY popularity DESC LIMIT ${limit}`;
 }

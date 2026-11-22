@@ -1,11 +1,12 @@
-/** Ručné spúšťanie úloh: npm run sync | sync:hourly | notify | migrate | seed-demo | vapid */
+/** Ručné spúšťanie úloh: tsx worker/cli.ts <príkaz> */
 import webpush from "web-push";
 import { sql } from "../src/lib/db";
-import { fullSync, hourlySync, migrate, syncRatings, syncShow } from "./sync";
+import { cleanup, fullSync, hourlySync, migrate, syncFollowedSeasons, syncRatings } from "./sync";
+import { syncTitle } from "../src/lib/sync";
 import { sendNotifications } from "./notify";
 import { seedDemo } from "./demo";
 
-const [cmd, arg] = process.argv.slice(2);
+const [cmd, a1, a2] = process.argv.slice(2);
 
 async function main() {
   switch (cmd) {
@@ -17,13 +18,19 @@ async function main() {
       return;
     }
     case "migrate": await migrate(); break;
-    case "sync": await migrate(); arg ? await syncShow(Number(arg)) : await fullSync(); break;
+    case "sync":
+      await migrate();
+      if (a1 === "tv" || a1 === "movie") await syncTitle(a1, Number(a2));
+      else await fullSync();
+      break;
     case "hourly": await hourlySync(); break;
+    case "seasons": await syncFollowedSeasons(); break;
     case "ratings": await syncRatings(); break;
     case "notify": await sendNotifications(); break;
+    case "cleanup": await cleanup(); break;
     case "seed-demo": await migrate(); await seedDemo(); break;
     default:
-      console.log("Použitie: tsx worker/cli.ts <migrate|sync [tmdbId]|hourly|ratings|notify|seed-demo|vapid>");
+      console.log("Použitie: tsx worker/cli.ts <migrate|sync [tv|movie tmdbId]|hourly|seasons|ratings|notify|cleanup|seed-demo|vapid>");
       process.exitCode = 1;
   }
   await sql.end();

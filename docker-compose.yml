@@ -1,5 +1,6 @@
-# Kukátko na VPS: databáza + web + robot + HTTPS (Caddy).
+# Kukátko na VPS: databáza + web + robot + zálohy + HTTPS (Caddy).
 # Spustenie: docker compose up -d --build
+# So štatistikami návštevnosti (Umami): docker compose --profile analytics up -d --build
 name: kukatko
 
 x-db-url: &dburl postgres://${POSTGRES_USER:-kukatko}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-kukatko}
@@ -43,6 +44,25 @@ services:
     depends_on:
       db: { condition: service_healthy }
 
+  # Každú noc záloha databázy do priečinka ./backups (posledných 14 dní).
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/backup.sh"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kukatko}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-kukatko}
+      BACKUP_HOUR: ${BACKUP_HOUR:-2}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      HC_BACKUP_URL: ${HC_BACKUP_URL:-}
+      TZ: ${TZ_DISPLAY:-Europe/Bratislava}
+    volumes:
+      - ./backup/backup.sh:/backup.sh:ro
+      - ./backups:/backups
+    depends_on:
+      db: { condition: service_healthy }
+
   caddy:
     image: caddy:2.10-alpine
     restart: unless-stopped
@@ -54,6 +74,18 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on: [web]
+
+  # Voliteľné: štatistiky návštevnosti bez cookies (Umami). Zapneš profilom "analytics".
+  # Databázu "umami" vytvoríš raz: docker compose exec db createdb -U kukatko umami
+  umami:
+    profiles: ["analytics"]
+    image: ${UMAMI_IMAGE:-ghcr.io/umami-software/umami:postgresql-latest}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-kukatko}:${POSTGRES_PASSWORD}@db:5432/umami
+      APP_SECRET: ${UMAMI_APP_SECRET:-zmen-ma}
+    depends_on:
+      db: { condition: service_healthy }
 
 volumes:
   pgdata:

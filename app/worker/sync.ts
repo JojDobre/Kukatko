@@ -1,11 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { sql } from "../src/lib/db";
-import { discoverPage, mapShow, seasonDetails, showDetails, type ShowRow } from "../src/lib/tmdb";
+import { discoverPage, type Kind } from "../src/lib/tmdb";
 import { omdbByImdbId } from "../src/lib/omdb";
 import { todayISO } from "../src/lib/format";
-
-const log = (...a: unknown[]) => console.log(new Date().toISOString(), ...a);
+import { REGIONS } from "../src/lib/locales";
+import { log, markRemoved, pool, syncAllSeasons, syncGenres, syncTitle } from "../src/lib/sync";
 
 export async function migrate() {
   const file = fileURLToPath(new URL("../db/schema.sql", import.meta.url));
@@ -13,95 +13,85 @@ export async function migrate() {
   log("Schéma databázy je aktuálna");
 }
 
-/** Spustí úlohy s obmedzeným počtom naraz (TMDB povoľuje cca 40 dopytov/s). */
-async function pool<T>(items: T[], limit: number, fn: (x: T) => Promise<void>) {
-  let i = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(limit, items.length) }, async () => {
-      while (i < items.length) await fn(items[i++]);
-    }),
-  );
+async function setState(key: string, value: unknown) {
+  await sql`INSERT INTO kv (key, value) VALUES (${key}, ${sql.json(value as any)})
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`;
 }
 
-async function upsert(r: ShowRow, currentSeason: unknown) {
-  await sql`
-    INSERT INTO shows (id, slug, name, original_name, overview, tagline, poster_path, backdrop_path, first_air_date, year,
-      status, genres, seasons, episodes, creators, "cast", providers, provider_ids, watch_link, next_ep, next_air_date,
-      last_ep, current_season, trailer_key, popularity, tmdb_rating, tmdb_votes, imdb_id, synced_at)
-    VALUES (${r.id}, ${r.slug}, ${r.name}, ${r.original_name}, ${r.overview}, ${r.tagline}, ${r.poster_path},
-      ${r.backdrop_path}, ${r.first_air_date}, ${r.year}, ${r.status}, ${r.genres}, ${r.seasons}, ${r.episodes},
-      ${r.creators}, ${sql.json(r.cast)}, ${sql.json(r.providers)}, ${r.provider_ids}, ${r.watch_link},
-      ${r.next_ep ? sql.json(r.next_ep) : null}, ${r.next_air_date}, ${r.last_ep ? sql.json(r.last_ep) : null},
-      ${currentSeason ? sql.json(currentSeason as any) : null}, ${r.trailer_key}, ${r.popularity}, ${r.tmdb_rating},
-      ${r.tmdb_votes}, ${r.imdb_id}, now())
-    ON CONFLICT (id) DO UPDATE SET
-      slug = EXCLUDED.slug, name = EXCLUDED.name, original_name = EXCLUDED.original_name, overview = EXCLUDED.overview,
-      tagline = EXCLUDED.tagline, poster_path = EXCLUDED.poster_path, backdrop_path = EXCLUDED.backdrop_path,
-      first_air_date = EXCLUDED.first_air_date, year = EXCLUDED.year, status = EXCLUDED.status, genres = EXCLUDED.genres,
-      seasons = EXCLUDED.seasons, episodes = EXCLUDED.episodes, creators = EXCLUDED.creators, "cast" = EXCLUDED."cast",
-      providers = EXCLUDED.providers, provider_ids = EXCLUDED.provider_ids, watch_link = EXCLUDED.watch_link,
-      next_ep = EXCLUDED.next_ep, next_air_date = EXCLUDED.next_air_date, last_ep = EXCLUDED.last_ep,
-      current_season = EXCLUDED.current_season, trailer_key = EXCLUDED.trailer_key, popularity = EXCLUDED.popularity,
-      tmdb_rating = EXCLUDED.tmdb_rating, tmdb_votes = EXCLUDED.tmdb_votes,
-      imdb_id = COALESCE(EXCLUDED.imdb_id, shows.imdb_id), synced_at = now()`;
-}
-
-/** Stiahne jeden seriál z TMDB a uloží ho. */
-export async function syncShow(id: number) {
-  const d = await showDetails(id);
-  const r = mapShow(d);
-  let currentSeason = null;
-  const season = r.next_ep?.season ?? (r.status === "Returning Series" ? r.last_ep?.season : null);
-  if (season) {
-    try {
-      const s = await seasonDetails(id, season);
-      currentSeason = s.episodes.map((e) => ({ episode: e.episode_number, name: e.name, air_date: e.air_date || null }));
-    } catch (e) {
-      log(`Sezónu ${season} seriálu ${id} sa nepodarilo načítať:`, (e as Error).message);
-    }
-  }
-  await upsert(r, currentSeason);
-}
-
-async function syncMany(ids: number[], label: string) {
+async function syncMany(items: { kind: Kind; id: number }[], label: string) {
   let ok = 0, fail = 0;
-  await pool(ids, 8, async (id) => {
+  await pool(items, 8, async ({ kind, id }) => {
     try {
-      await syncShow(id);
+      await syncTitle(kind, id);
       ok++;
     } catch (e) {
       fail++;
-      log(`Chyba pri seriáli ${id}:`, (e as Error).message);
+      log(`Chyba pri ${kind} ${id}:`, (e as Error).message);
     }
   });
   log(`${label}: uložených ${ok}, chýb ${fail}`);
+  return { ok, fail };
 }
 
-/** Nočná úloha: populárne seriály dostupné v regióne + všetky sledované a pokračujúce. */
+/**
+ * Nočná úloha: populárne seriály a filmy dostupné v každom regióne,
+ * plus všetko, čo už máme na platformách, čo sa sleduje alebo pokračuje.
+ */
 export async function fullSync() {
-  const pages = Number(process.env.SYNC_PAGES ?? 25); // 20 seriálov na stranu
-  const ids = new Set<number>();
-  for (let p = 1; p <= pages; p++) {
-    const res = await discoverPage(p);
-    res.results.forEach((r) => ids.add(r.id));
-    if (p >= res.total_pages) break;
+  const pages = Number(process.env.SYNC_PAGES ?? 25);       // 20 titulov na stranu
+  const moviePages = Number(process.env.SYNC_MOVIE_PAGES ?? pages);
+  const want = new Map<string, { kind: Kind; id: number }>();
+  const add = (kind: Kind, id: number) => want.set(`${kind}:${id}`, { kind, id });
+
+  await syncGenres().catch((e) => log("Žánre:", e.message));
+  for (const region of REGIONS) {
+    for (const [kind, max] of [["tv", pages], ["movie", moviePages]] as const) {
+      for (let p = 1; p <= max; p++) {
+        const res = await discoverPage(kind, region, p);
+        res.results.forEach((r) => add(kind, r.id));
+        if (p >= res.total_pages) break;
+      }
+    }
   }
-  log(`TMDB discover: ${ids.size} seriálov`);
-  const extra = await sql<{ id: number }[]>`
-    SELECT id FROM shows WHERE status IN ('Returning Series', 'In Production', 'Planned')
-    UNION SELECT DISTINCT show_id FROM follows`;
-  extra.forEach((r) => ids.add(r.id));
-  await syncMany([...ids], "Nočná synchronizácia");
+  log(`TMDB discover (${REGIONS.join(", ")}): ${want.size} titulov`);
+
+  const extra = await sql<{ kind: Kind; tmdb_id: number }[]>`
+    SELECT kind, tmdb_id FROM titles
+    WHERE cardinality(regions) > 0
+       OR status IN ('Returning Series', 'In Production', 'Planned', 'Post Production')
+       OR id IN (SELECT DISTINCT title_id FROM follows)`;
+  extra.forEach((r) => add(r.kind, r.tmdb_id));
+
+  const res = await syncMany([...want.values()], "Nočná synchronizácia");
+  await markRemoved();
+  await syncFollowedSeasons();
   await syncRatings();
+  await setState("last_full_sync", { at: new Date().toISOString(), ...res });
+  return res;
 }
 
-/** Hodinová úloha: obnoví seriály, ktorým práve vychádza epizóda (aby sme vedeli poslať upozornenie). */
+/** Hodinová úloha: obnoví seriály, ktorým práve vychádza epizóda. */
 export async function hourlySync() {
-  const rows = await sql<{ id: number }[]>`
-    SELECT id FROM shows
+  const rows = await sql<{ kind: Kind; tmdb_id: number }[]>`
+    SELECT kind, tmdb_id FROM titles
     WHERE next_air_date <= (${todayISO()}::date + 1)
-       OR (id IN (SELECT DISTINCT show_id FROM follows) AND synced_at < now() - interval '12 hours')`;
-  if (rows.length) await syncMany(rows.map((r) => r.id), "Hodinová obnova");
+       OR (id IN (SELECT DISTINCT title_id FROM follows) AND synced_at < now() - interval '12 hours')`;
+  if (rows.length) await syncMany(rows.map((r) => ({ kind: r.kind, id: r.tmdb_id })), "Hodinová obnova");
+  await syncFollowedSeasons(20);
+  await setState("last_hourly_sync", { at: new Date().toISOString() });
+}
+
+/** Všetky epizódy sledovaných seriálov (kvôli odškrtávaniu pozretých). Raz za 7 dní. */
+export async function syncFollowedSeasons(limit = 200) {
+  const rows = await sql<{ id: number }[]>`
+    SELECT t.id FROM titles t
+    WHERE t.kind = 'tv' AND t.id IN (SELECT DISTINCT title_id FROM follows)
+      AND (t.seasons_synced_at IS NULL OR t.seasons_synced_at < now() - interval '7 days')
+    ORDER BY t.seasons_synced_at NULLS FIRST LIMIT ${limit}`;
+  await pool(rows, 4, async (r) => {
+    try { await syncAllSeasons(r.id); } catch (e) { log(`Epizódy titulu ${r.id}:`, (e as Error).message); }
+  });
+  if (rows.length) log(`Epizódy sledovaných seriálov: ${rows.length}`);
 }
 
 /** Hodnotenia z OMDb v rámci denného limitu. Najprv tie, ktoré nemáme vôbec alebo najdlhšie. */
@@ -115,7 +105,7 @@ export async function syncRatings() {
   if (left <= 0) return log("OMDb: denný limit vyčerpaný");
 
   const rows = await sql<{ id: number; imdb_id: string }[]>`
-    SELECT id, imdb_id FROM shows
+    SELECT id, imdb_id FROM titles
     WHERE imdb_id IS NOT NULL AND (omdb_checked_at IS NULL OR omdb_checked_at < now() - interval '7 days')
     ORDER BY omdb_checked_at NULLS FIRST, popularity DESC LIMIT ${left}`;
   let done = 0;
@@ -124,12 +114,20 @@ export async function syncRatings() {
     used++;
     if (res === "limit") break;
     if (res === undefined) continue;
-    await sql`UPDATE shows SET omdb_checked_at = now(),
+    await sql`UPDATE titles SET omdb_checked_at = now(),
       imdb_rating = ${res?.imdb_rating ?? null}, imdb_votes = ${res?.imdb_votes ?? null}, rt_rating = ${res?.rt_rating ?? null}
       WHERE id = ${r.id}`;
     done++;
   }
-  await sql`INSERT INTO kv (key, value) VALUES ('omdb', ${sql.json({ day: today, used })})
-    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`;
-  log(`OMDb: aktualizovaných ${done} seriálov (dnes použitých ${used}/${budgetDay})`);
+  await setState("omdb", { day: today, used });
+  log(`OMDb: aktualizovaných ${done} titulov (dnes použitých ${used}/${budgetDay})`);
+}
+
+/** Zmaže staré záznamy, ktoré už netreba. */
+export async function cleanup() {
+  await sql`DELETE FROM transfer_codes WHERE expires_at < now()`;
+  await sql`DELETE FROM notifications_sent WHERE sent_at < now() - interval '120 days'`;
+  await sql`DELETE FROM devices d WHERE last_seen < now() - interval '400 days'
+    AND NOT EXISTS (SELECT 1 FROM follows f WHERE f.device_id = d.id)
+    AND (premium_until IS NULL OR premium_until < now())`;
 }

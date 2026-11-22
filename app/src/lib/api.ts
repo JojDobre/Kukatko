@@ -8,6 +8,7 @@ export function handler(fn: (deviceId: string, body: any) => Promise<unknown>) {
       const body = req.method === "GET" ? null : await req.json().catch(() => ({}));
       const dev = await ensureDevice();
       const out = await fn(dev, body);
+      if (out instanceof Response) return out;
       return NextResponse.json(out ?? { ok: true });
     } catch (e) {
       if (e instanceof Response) return e;

@@ -1,0 +1,138 @@
+/** Slovenské texty. Slúžia aj ako vzor pre ostatné jazyky. {x} sa nahradí hodnotou. */
+const sk = {
+  meta: {
+    tagline: "kde pozerať seriály a filmy",
+    description: "Zisti, kde sa dá seriál alebo film pozrieť na Netflixe, HBO Max, Disney+, Voyo a ďalších. Hodnotenia z IMDb, TMDB a Rotten Tomatoes na jednom mieste a upozornenia na nové epizódy.",
+  },
+  nav: { home: "Domov", catalog: "Katalóg", search: "Hľadať", watchlist: "Sledujem", profile: "Profil", charts: "Rebríčky", notifications: "Upozornenia", thisWeekBadge: "{n} tento týždeň" },
+  common: {
+    tv: "Seriál", movie: "Film", tvs: "Seriály", movies: "Filmy", all: "Všetky", everything: "Všetko",
+    seeAll: "Zobraziť všetko", close: "Zavrieť", language: "Jazyk", min: "{n} min",
+    days: { one: "deň", few: "dni", many: "dní", other: "dní" },
+    seasons: { one: "{n} sezóna", few: "{n} sezóny", many: "{n} sezón", other: "{n} sezón" },
+    titles: { one: "{n} titul", few: "{n} tituly", many: "{n} titulov", other: "{n} titulov" },
+  },
+  time: {
+    today: "dnes", tomorrow: "zajtra", yesterday: "včera",
+    inDays: { one: "o {n} deň", few: "o {n} dni", many: "o {n} dní", other: "o {n} dní" },
+    daysAgo: { one: "pred {n} dňom", few: "pred {n} dňami", many: "pred {n} dňami", other: "pred {n} dňami" },
+  },
+  footer: {
+    data: "Dáta o tituloch", tmdb: "Tento produkt používa TMDB API, ale nie je schválený ani certifikovaný spoločnosťou TMDB.",
+    availability: "Dostupnosť na platformách", about: "O stránke a súkromie", privacy: "Nastavenia súkromia",
+  },
+  home: {
+    nextPremiere: "Najbližšia premiéra", topRated: "Najlepšie hodnotené", thisWeek: "Tento týždeň",
+    nothingThisWeek: "Na tvojich platformách tento týždeň nič nové nevychádza.", watching: "Sledujem",
+    bestRated: "Najlepšie hodnotený", releaseDate: "dátum vydania", releasesToday: "vychádza", todayBig: "Dnes",
+    newOnPlatforms: "Nové na platformách", topTv: "Najlepšie seriály", topMovies: "Najlepšie filmy",
+    onYourPlatforms: "na tvojich platformách", fullCatalog: "Celý katalóg",
+    preparingTitle: "Katalóg sa pripravuje", preparingText: "Robot práve sťahuje tituly z TMDB. Prvá synchronizácia trvá zvyčajne 10 až 20 minút.",
+  },
+  follow: {
+    short: "Upozorni ma", following: "Sledujem", fullTv: "Upozorni ma na nové epizódy", fullMovie: "Upozorni ma, keď bude na streamingu",
+    followingFull: "Sledujem, upozornenia zapnuté", toastEp: "Ozveme sa {when} pri {ep}", toastSeason: "Ozveme sa pri novej sezóne",
+    toastMovie: "Ozveme sa, keď pribudne na platformu alebo z nej zmizne", toastOff: "Upozornenia pre {name} vypnuté",
+    aria: "Upozornenia: {name}", saveError: "Nepodarilo sa uložiť. Skús to znova.", pushOn: "Upozornenia zapnuté", pushFail: "Upozornenia sa nepodarilo zapnúť",
+  },
+  catalog: {
+    title: "Katalóg", metaTitle: "Katalóg seriálov a filmov",
+    metaDesc: "Seriály a filmy dostupné na streamovacích službách. Zoraď podľa hodnotenia IMDb, TMDB, Rotten Tomatoes alebo podľa najbližšej epizódy.",
+    sort: "Zoradiť", platforms: "Platformy", genre: "Žáner", selected: "{n} vybrané", clear: "Zrušiť výber",
+    empty: "Nič nesedí na filtre. Skús niektorý zrušiť.", prev: "Predchádzajúca", next: "Ďalšia", pages: "Strany",
+    sorts: { score: "Priemer", popular: "Populárne", imdb: "IMDb", tmdb: "TMDB", rt: "Rotten Tomatoes", users: "Užívatelia", next: "Najbližšia epizóda", new: "Najnovšie" },
+  },
+  search: {
+    title: "Hľadať", placeholder: "Seriál, film, herec alebo žáner", resultsFor: "Výsledky pre „{q}“",
+    nothing: "Nič sa nenašlo. Skús iný názov alebo meno herca.", people: "Herci a tvorcovia",
+  },
+  title: {
+    average: "Priemer", fromAll: "zo všetkých zdrojov", outOf10: "z 10", openImdb: "otvoriť IMDb", critics: "kritici",
+    votes: { one: "{n} hlas", few: "{n} hlasy", many: "{n} hlasov", other: "{n} hlasov" },
+    userRatings: { one: "{n} hodnotenie", few: "{n} hodnotenia", many: "{n} hodnotení", other: "{n} hodnotení" },
+    shownFrom5: "(ukáže sa od 5)", yourRating: "Tvoje hodnotenie", ratingGroup: "Tvoje hodnotenie od 1 do 10",
+    rateSaved: "Tvoje hodnotenie: {n}/10", rateRemoved: "Hodnotenie zrušené", rateError: "Hodnotenie sa nepodarilo uložiť",
+    whereToWatch: "Kde pozerať", flatrate: "v predplatnom", free: "zadarmo", ads: "s reklamami", open: "otvoriť",
+    availabilityNote: "Dostupnosť od JustWatch, aktualizované denne.", notAvailable: "Momentálne nie je na žiadnej streamovacej službe ({region}).",
+    episodes: "Epizódy", season: "{n}. sezóna", ended: "Seriál je ukončený, všetky epizódy sú vonku.", noNewSeason: "Nová sezóna zatiaľ nie je ohlásená.",
+    nextEpisode: "Ďalšia epizóda", trailer: "Trailer", cast: "Hrajú", similar: "Podobné", creators: "Tvorcovia", directors: "Réžia",
+    originalTitle: "Pôvodný názov", noOverview: "Popis zatiaľ nie je k dispozícii.", poster: "Plagát: {name}",
+    metaTitle: "{name} ({year}): kde pozerať", metaWhere: "{name} pozeraj na {where}.",
+    status: { "Returning Series": "Pokračuje", Ended: "Ukončený", Canceled: "Zrušený", "In Production": "Vo výrobe", Planned: "Plánovaný", Pilot: "Pilot", Released: "V kinách vyšiel", "Post Production": "Postprodukcia", Rumored: "Pripravuje sa" },
+  },
+  watched: {
+    mark: "Označiť ako pozreté", markSeason: "Označiť celú sezónu", unmarkSeason: "Zrušiť celú sezónu",
+    progress: "{w} z {t} pozretých", continueWith: "Pokračuj: {ep}", allWatched: "Všetko pozreté", notAired: "ešte nevyšlo",
+    loading: "Epizódy sa ešte sťahujú. Skús to o chvíľu.", followToTrack: "Začni seriál sledovať a môžeš si odškrtávať pozreté epizódy.",
+    inProgress: "Pozerám",
+  },
+  reviews: {
+    title: "Recenzie", write: "Napísať recenziu", nickname: "Prezývka (nepovinné)", placeholder: "Čo sa ti páčilo alebo nepáčilo? Bez spoilerov, prosím.",
+    submit: "Uverejniť", tooShort: "Recenzia musí mať aspoň 20 znakov.", pending: "Ďakujeme! Recenzia sa zobrazí po kontrole.",
+    published: "Recenzia uverejnená", report: "Nahlásiť", reported: "Nahlásené, ďakujeme", none: "Zatiaľ žiadne recenzie. Buď prvý.",
+    anonymous: "Anonym", yours: "Tvoja recenzia", delete: "Zmazať", deleted: "Recenzia zmazaná", limit: "Dnes si už napísal veľa recenzií. Skús to zajtra.",
+    waiting: "Čaká na kontrolu",
+  },
+  watchlist: {
+    metaTitle: "Sledujem", upcoming: "Najbližšie epizódy", empty: "Zatiaľ nič. Klikni na zvonček na plagáte a ozveme sa, keď vyjde niečo nové.",
+    setup: "Nastaviť upozornenia", waitingSeason: "Čaká sa na novú sezónu", allHaveNext: "Všetky sledované seriály majú ohlásenú ďalšiu epizódu.",
+    mightLike: "Mohlo by sa ti páčiť", startWith: "Na začiatok skús", movies: "Sledované filmy", notStreaming: "zatiaľ nie je na streamingu",
+  },
+  profile: {
+    metaTitle: "Profil a upozornenia", notifications: "Upozornenia", pushDevice: "Upozornenia v tomto zariadení",
+    pushHint: "Push správa, keď sa stane niečo, čo sleduješ", pushUnsupported: "Tento prehliadač upozornenia nepodporuje. Na iPhone si najprv pridaj stránku na plochu.",
+    pushBlocked: "Upozornenia máš zablokované v nastaveniach prehliadača.",
+    episodes: "Nové epizódy", episodesHint: "V deň, keď epizóda vyjde", seasons: "Nové sezóny", seasonsHint: "Keď sa ohlási dátum premiéry",
+    availability: "Príchody a odchody z platforiem", availabilityHint: "Keď sledovaný titul pribudne na platformu alebo z nej zmizne",
+    reminder: "Pripomienka deň vopred", reminderHint: "Večer pred vydaním epizódy", premiumOnly: "len s prémiom",
+    appearance: "Vzhľad", themeSystem: "Podľa zariadenia", themeLight: "Svetlý", themeDark: "Tmavý", saved: "Uložené", on: "Zapnuté", off: "Vypnuté",
+    noAccount: "Bez registrácie", noAccountText: "Sledované tituly a nastavenia sa ukladajú k tomuto zariadeniu. Nemusíš sa registrovať a nezbierame e-mail ani meno.",
+    transfer: "Preniesť na iné zariadenie",
+    transferText: "Na druhom zariadení naskenuj QR kód alebo zadaj kód. Prenesú sa sledované tituly, hodnotenia, pozreté epizódy aj prémium.",
+    createCode: "Vytvoriť kód", codeValid: "Kód platí 15 minút.", enterCode: "Mám kód z iného zariadenia", codePlaceholder: "napr. K7Q2MX",
+    useCode: "Preniesť sem", codeInvalid: "Kód je neplatný alebo už vypršal.", transferDone: "Hotovo, údaje sú prenesené.",
+    transferNote: "Údaje z tohto zariadenia sa spoja s údajmi z druhého zariadenia.",
+  },
+  premium: {
+    title: "Prémium", heading: "{site} bez reklám", text: "Podporíš ďalší vývoj a dostaneš pár výhod navyše.",
+    perks: ["Žiadne reklamy na webe ani v appke", "Pripomienka večer pred vydaním epizódy", "Platí na všetkých tvojich zariadeniach cez prenos kódom"],
+    price: "{price} mesačne", buy: "Predplatiť", manage: "Spravovať predplatné", activeUntil: "Prémium aktívne do {date}",
+    thanks: "Ďakujeme za podporu! Prémium je aktívne.", error: "Platbu sa nepodarilo spustiť. Skús to neskôr.",
+  },
+  charts: {
+    title: "Rebríčky", metaDesc: "Novinky na Netflixe, HBO Max, Disney+ a ďalších, najlepšie seriály a filmy a čo vychádza tento týždeň. Aktualizované každý deň.",
+    intro: "Rebríčky sa aktualizujú každý deň podľa toho, čo pribudlo alebo zmizlo z platforiem.",
+    thisWeek: "Vychádza tento týždeň", newOn: "Nové na platforme {p}", bestTvOn: "Najlepšie seriály na platforme {p}",
+    bestMoviesOn: "Najlepšie filmy na platforme {p}", leaving: "Zmizlo z platforiem", bestTv: "Najlepšie seriály", bestMovies: "Najlepšie filmy",
+    added: "pribudlo {date}", removed: "{p}: odstránené {date}", empty: "Zatiaľ tu nič nie je. Rebríček sa naplní po pár dňoch sledovania platforiem.",
+    byPlatform: "Podľa platformy", general: "Všeobecné",
+  },
+  person: {
+    knownFor: "Známy hlavne ako", born: "Narodenie", died: "Úmrtie", birthplace: "Miesto narodenia", filmography: "Dá sa pozrieť",
+    otherWork: "Ďalšie filmy a seriály", noBio: "Životopis zatiaľ nie je k dispozícii.", metaDesc: "{name}: filmy a seriály a kde ich pozerať.",
+    departments: { Acting: "herec", Directing: "réžia", Writing: "scenár", Production: "produkcia" },
+  },
+  about: {
+    title: "O stránke {site}",
+    p1: "{site} ti ukáže, na ktorej streamovacej službe nájdeš seriál alebo film, ako ho hodnotia diváci a kritici a kedy vyjde ďalšia epizóda. Nevysielame žiadne videá, iba odkazujeme na oficiálne platformy.",
+    dataTitle: "Odkiaľ sú dáta",
+    data: "Popisy, plagáty, herci a epizódy pochádzajú z TMDB. Tento produkt používa TMDB API, ale nie je schválený ani certifikovaný spoločnosťou TMDB. Informácie o dostupnosti na platformách poskytuje JustWatch. Hodnotenia IMDb a Rotten Tomatoes získavame cez OMDb API.",
+    privacyTitle: "Súkromie",
+    privacy: "Nevyžadujeme registráciu. Tvoje zariadenie dostane náhodný identifikátor uložený v cookie, aby sme si pamätali, čo sleduješ, ako si hodnotil a ktoré platformy máš. Ak zapneš upozornenia, uložíme adresu na doručenie push správ od tvojho prehliadača. Tieto údaje nepredávame.",
+    ads: "Stránka môže zobrazovať reklamy Google AdSense. Súhlas s cookies na reklamy spravuje Google a môžeš ho kedykoľvek zmeniť cez „Nastavenia súkromia“ v pätičke. Niektoré odkazy na platformy sú partnerské: ak si cez ne predplatíš službu, môžeme dostať províziu. Teba to nič nestojí.",
+    contact: "Kontakt: {email}",
+  },
+  notFound: { title: "Táto stránka neexistuje", text: "Titul mohol byť odstránený alebo je odkaz nesprávny.", cta: "Prejsť do katalógu" },
+  notify: {
+    epTitle: "{name}: nová epizóda", epBody: "{ep} je vonku.",
+    seasonTitle: "{name}: {n}. sezóna", seasonBody: "Premiéra {date}. Pripomenieme ti ju.", seasonSoon: "Premiéra bude čoskoro.",
+    arrivedTitle: "{name}: teraz na platforme {p}", arrivedBody: "Práve pribudlo. Môžeš pozerať.",
+    removedTitle: "{name}: už nie je na platforme {p}", removedBody: "Z platformy {p} zmizlo.", removedElsewhere: "Teraz ho nájdeš na: {others}.",
+    reminderTitle: "Zajtra: {name}", reminderBody: "{ep} vychádza zajtra.",
+  },
+};
+
+export default sk;
+
+type Widen<T> = T extends string ? string : T extends readonly (infer U)[] ? Widen<U>[] : { [K in keyof T]: Widen<T[K]> };
+export type Dict = Widen<typeof sk>;
