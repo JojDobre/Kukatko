@@ -101,6 +101,7 @@ const pl: Dict = {
     thanks: "Dziękujemy za wsparcie! Premium jest aktywne.", error: "Nie udało się rozpocząć płatności. Spróbuj później.",
   },
   charts: {
+    bestAll: "Najlepsze ogółem", trending: "Popularne teraz", bestOn: "Najlepsze w serwisie {p}", choose: "Ranking", platformsAll: "Wszystkie serwisy", subtitleOn: "w serwisach: {p}",
     title: "Rankingi", metaDesc: "Nowości na Netflixie, Max, Disney+ i innych, najlepsze seriale i filmy oraz premiery w tym tygodniu. Aktualizowane codziennie.",
     intro: "Rankingi aktualizują się codziennie na podstawie tego, co pojawiło się lub zniknęło z serwisów.",
     thisWeek: "Premiery w tym tygodniu", newOn: "Nowości w serwisie {p}", bestTvOn: "Najlepsze seriale w serwisie {p}",
@@ -184,12 +185,14 @@ const pl: Dict = {
     google: "Dodaj do Kalendarza Google", apple: "Dodaj do Kalendarza Apple", copy: "Kopiuj link", note: "Link jest prywatny, nikomu go nie wysyłaj.",
   },
   filters: {
+    button: "Filtry", show: "Pokaż wyniki", title: "Filtry i sortowanie", kind: "Typ",
     year: "Rok", runtime: "Długość", language: "Język oryginalny", score: "Ocena", scoreMin: "co najmniej {n}%", any: "Dowolna", older: "starsze", reset: "Wyczyść filtry",
     runtimeMovie: { short: "do 90 min", medium: "90–120 min", long: "ponad 120 min" },
     runtimeTv: { short: "odcinki do 30 min", medium: "odcinki 30–60 min", long: "odcinki ponad 60 min" },
   },
   promo: { label: "Reklama" },
-  more: { pick: "Co dziś?", calendar: "Kalendarz", platforms: "Serwisy", stats: "Moje statystyki", together: "Oglądajcie razem" },
+  more: {
+    pickSub: "3 propozycje na dziś", calendarSub: "Kiedy wychodzą odcinki", statsSub: "Twój rok w liczbach", togetherSub: "Propozycje dla was dwojga", platformsSub: "Nowości w twoich serwisach", pick: "Co dziś?", calendar: "Kalendarz", platforms: "Serwisy", stats: "Moje statystyki", together: "Oglądajcie razem" },
   episode: {
     metaTitle: "{show} {code}: {name}", metaDesc: "{show}, sezon {season}, odcinek {episode}: {name}. Opis, oceny i gdzie obejrzeć.",
     season: "Sezon {n}", episode: "Odcinek {n}", back: "Wróć do serialu", prev: "Poprzedni", next: "Następny",

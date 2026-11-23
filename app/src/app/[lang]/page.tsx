@@ -5,7 +5,7 @@ import { selectedPlats } from "@/lib/prefs";
 import { followed, followedIds, newArrivals, providerList, topRated, upcoming } from "@/lib/queries";
 import { activePromo } from "@/lib/promo";
 import PromoTile from "@/components/PromoTile";
-import { platformStyle } from "@/lib/platforms";
+import PlatformStrip from "@/components/PlatformStrip";
 import { daysUntil, epCode, fmtDate, img, rel, todayISO, tone } from "@/lib/format";
 import { plural } from "@/lib/i18n";
 import { page, titleHref, type LangParams } from "@/lib/page";
@@ -100,20 +100,16 @@ export default async function Home({ params }: { params: LangParams }) {
         </Link>
       )}
 
-      <Link href={h("/pick")} className="tile w2 click pickt">
-        <span className="lbl"><span>{d.more.pick}</span></span>
-        <h2>{d.pick.title}</h2>
-        <p>{d.pick.metaDesc}</p>
+      <Link href={h("/pick")} className="tile w4 click pickt">
+        <div className="pickt-text">
+          <span className="lbl"><span>{d.more.pick}</span></span>
+          <h2>{d.pick.title}</h2>
+          <p>{d.pick.metaDesc}</p>
+        </div>
         <span className="btn">{d.pick.cta}</span>
       </Link>
 
-      <div className="tile w2">
-        <div className="lbl"><span>{d.more.platforms}</span><Link className="link" href={h("/calendar")}>{d.more.calendar} →</Link></div>
-        <div className="chartlinks">
-          {provs.slice(0, 8).map((p) => <Link key={p.id} className="chip" href={h(`/platform/${p.slug}`)}><span className="pdot" style={{ background: platformStyle(p.name).color }} />{p.name}</Link>)}
-          <Link className="chip" href={h("/platforms")}>{d.platform.all} →</Link>
-        </div>
-      </div>
+      <PlatformStrip lang={lang} provs={provs} />
 
       {promo && <PromoTile p={promo} label={d.promo.label} />}
 

@@ -1,5 +1,4 @@
-import { chartList } from "@/lib/charts";
-import { dict } from "@/lib/i18n";
+import { chartKeys } from "@/lib/charts";
 import { href, isLang, regionOf } from "@/lib/locales";
 import { providerList, sitemapPeople, sitemapTitles } from "@/lib/queries";
 import { sitemapEpisodes } from "@/lib/extra";
@@ -17,7 +16,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ lang: stri
   const [titles, people, charts, provs, eps] = await Promise.all([
     sitemapTitles(lang, 0, 40000).catch(() => []),
     sitemapPeople(8000).catch(() => []),
-    chartList(ctx, dict(lang)).catch(() => []),
+    chartKeys(ctx).catch(() => [] as string[]),
     providerList(ctx.region, 3).catch(() => []),
     sitemapEpisodes(lang, 15000).catch(() => []),
   ]);
@@ -26,7 +25,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ lang: stri
   const urls = [
     u("/"), u("/catalog"), u("/catalog?kind=movie"), u("/charts"), u("/calendar"), u("/pick", undefined, "weekly"),
     u("/platforms"), ...provs.map((p) => u(`/platform/${p.slug}`)), u("/about", undefined, "monthly"),
-    ...charts.map((c) => u(`/charts/${c.key}`)),
+    ...charts.map((k) => u(`/charts/${k}`)),
     ...titles.map((t) => u(`/${t.kind}/${t.tmdb_id}-${t.slug}`, t.synced_at)),
     // „Podobné ako…“ len pre populárnejšie tituly (prvé 3000).
     ...titles.slice(0, 3000).map((t) => u(`/${t.kind}/${t.tmdb_id}-${t.slug}/similar`, undefined, "weekly")),

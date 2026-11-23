@@ -1,113 +1,159 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { Check, Chevron } from "./icons";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 import { platformStyle } from "@/lib/platforms";
 import { useI18n } from "./I18n";
+import { Sliders, X } from "./icons";
+
+export type FilterState = {
+  kind: "all" | "tv" | "movie"; sort: string; genre: string | null; year: number | null;
+  runtime: "short" | "medium" | "long" | null; score: number | null; lang: string | null;
+};
 
 type Props = {
-  kind: "tv" | "movie";
-  sort: string;
+  state: FilterState;
   sorts: string[];
-  providers: { id: number; name: string; count: number }[];
+  providers: { id: number; name: string; count: number; logo_path: string | null }[];
   selected: number[];
   region: string;
-  genres: { id: number; name: string; count: number }[];
-  genre: number | null;
+  genres: { ids: number[]; name: string; count: number }[];
   languages: { code: string; count: number }[];
-  extra: { decade: number | null; runtime: string | null; language: string | null; minScore: number | null };
 };
 
 const DECADES = [2020, 2010, 2000, 1990, 1980, 1970];
 
-export default function Filters({ kind, sort, sorts, providers, selected, region, genres, genre, languages, extra }: Props) {
-  const [open, setOpen] = useState<string | null>(null);
-  const [plats, setPlats] = useState<number[]>(selected);
-  const [, start] = useTransition();
-  const router = useRouter();
-  const params = useSearchParams();
-  const box = useRef<HTMLDivElement>(null);
+/** Katalóg: prepínač typu, tlačidlo „Filtre“ s panelom a aktívne filtre ako čipy. */
+export default function Filters({ state, sorts, providers, selected, region, genres, languages }: Props) {
   const { d, href, fmt, lang } = useI18n();
   const f = d.filters;
-  const langName = (code: string) => { try { return new Intl.DisplayNames([lang], { type: "language" }).of(code) ?? code; } catch { return code; } };
-  const active = [genre, extra.decade, extra.runtime, extra.language, extra.minScore].filter(Boolean).length;
+  const router = useRouter();
+  const [, start] = useTransition();
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(state);
+  const [plats, setPlats] = useState(selected);
 
-  useEffect(() => setPlats(selected), [selected.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setDraft(state); setPlats(selected); }, [JSON.stringify(state), selected.join(".")]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!open) return;
-    const close = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(null); };
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(null); };
-    document.addEventListener("click", close);
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     document.addEventListener("keydown", esc);
-    return () => { document.removeEventListener("click", close); document.removeEventListener("keydown", esc); };
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", esc); document.body.style.overflow = ""; };
   }, [open]);
 
-  function go(next: Record<string, string | null>) {
-    const q = new URLSearchParams(params.toString());
-    for (const [k, v] of Object.entries(next)) v ? q.set(k, v) : q.delete(k);
-    q.delete("page");
-    start(() => router.push(`${href("/catalog")}${q.size ? "?" + q.toString() : ""}`, { scroll: false }));
+  const langName = (code: string) => { try { return new Intl.DisplayNames([lang], { type: "language" }).of(code) ?? code; } catch { return code; } };
+  const sortLabel = (k: string) => (d.catalog.sorts as Record<string, string>)[k] ?? k;
+  const rt = (k: string) => (k === "movie" ? f.runtimeMovie : f.runtimeTv);
+  const decadeLabel = (y: number) => (y === 1970 ? `< 1980` : `${y} – ${y + 9}`);
+
+  function url(s: FilterState) {
+    const q = new URLSearchParams();
+    if (s.kind !== "all") q.set("kind", s.kind);
+    if (s.sort !== "score") q.set("sort", s.sort);
+    if (s.genre) q.set("genre", s.genre);
+    if (s.year) q.set("year", String(s.year));
+    if (s.runtime) q.set("runtime", s.runtime);
+    if (s.score) q.set("score", String(s.score));
+    if (s.lang) q.set("lang", s.lang);
+    return `${href("/catalog")}${q.size ? "?" + q : ""}`;
   }
   function savePlats(next: number[]) {
-    setPlats(next);
-    // Výber platforiem si pamätáme v cookie (pre každý región zvlášť), platí aj pre domovskú stránku.
+    // Platformy pamätáme v cookie (platia aj na domovskej stránke) a na serveri (upozornenia).
     document.cookie = `plats_${region}=${next.join(".")}; path=/; max-age=31536000; samesite=lax`;
-    // Uložíme ich aj na server (upozornenia „Chcem vidieť“, „Pozerajte spolu“).
     fetch("/api/platforms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ region, ids: next }) }).catch(() => {});
-    start(() => router.refresh());
   }
+  function go(s: FilterState, nextPlats = plats) {
+    if (nextPlats.join(".") !== selected.join(".")) savePlats(nextPlats);
+    start(() => { router.push(url(s), { scroll: false }); router.refresh(); });
+  }
+  function apply() { setOpen(false); go(draft, plats); }
 
-  const item = (key: string, on: boolean, content: React.ReactNode, onClick: () => void) => (
-    <button key={key} role="menuitemcheckbox" aria-checked={on} onClick={onClick}>
-      <span>{content}</span><span className="ck">{on && <Check />}</span>
-    </button>
+  // Aktívne filtre zobrazené ako čipy (dajú sa zrušiť jedným ťuknutím).
+  const chips: { label: string; clear: () => void }[] = [];
+  if (state.sort !== "score") chips.push({ label: sortLabel(state.sort), clear: () => go({ ...state, sort: "score" }) });
+  for (const id of selected) {
+    const p = providers.find((x) => x.id === id);
+    if (p) chips.push({ label: p.name, clear: () => { const n = selected.filter((x) => x !== id); setPlats(n); go(state, n); } });
+  }
+  if (state.genre) chips.push({ label: genres.find((g) => g.ids.join(".") === state.genre)?.name ?? f.any, clear: () => go({ ...state, genre: null }) });
+  if (state.year) chips.push({ label: decadeLabel(state.year), clear: () => go({ ...state, year: null }) });
+  if (state.runtime) chips.push({ label: rt(state.kind)[state.runtime], clear: () => go({ ...state, runtime: null }) });
+  if (state.score) chips.push({ label: fmt(f.scoreMin, { n: state.score }), clear: () => go({ ...state, score: null }) });
+  if (state.lang) chips.push({ label: langName(state.lang), clear: () => go({ ...state, lang: null }) });
+  const activeCount = chips.length;
+
+  const opt = <T,>(cur: T, val: T, label: React.ReactNode, set: (v: T) => void) => (
+    <button key={String(val)} className={`fchip${cur === val ? " on" : ""}`} aria-pressed={cur === val} onClick={() => set(val)}>{label}</button>
   );
-  const dd = (id: string, label: string, value: string, items: React.ReactNode) => (
-    <div className="dd">
-      <button className="ddb" aria-haspopup="menu" aria-expanded={open === id} onClick={() => setOpen(open === id ? null : id)}>
-        <small>{label}</small>{value}<Chevron />
-      </button>
-      {open === id && <div className="ddm" role="menu">{items}</div>}
-    </div>
-  );
-  const sortLabel = (k: string) => (d.catalog.sorts as Record<string, string>)[k] ?? k;
+  const kinds = [["all", d.common.everything], ["tv", d.common.tvs], ["movie", d.common.movies]] as const;
 
   return (
-    <div className="filters" ref={box}>
-      <div className="seg" role="group" aria-label={`${d.common.tvs} / ${d.common.movies}`}>
-        <button aria-pressed={kind === "tv"} onClick={() => go({ kind: null, genre: null, runtime: null, lang: null, sort: sort === "next" ? null : params.get("sort") })}>{d.common.tvs}</button>
-        <button aria-pressed={kind === "movie"} onClick={() => go({ kind: "movie", genre: null, runtime: null, lang: null, sort: sort === "next" ? null : params.get("sort") })}>{d.common.movies}</button>
+    <>
+      <div className="fbar">
+        <div className="seg" role="group" aria-label={f.kind}>
+          {kinds.map(([k, l]) => (
+            <button key={k} aria-pressed={state.kind === k}
+              onClick={() => go({ ...state, kind: k, genre: null, runtime: null, sort: k !== "tv" && state.sort === "next" ? "score" : state.sort })}>{l}</button>
+          ))}
+        </div>
+        <button className={`fbtn${activeCount ? " on" : ""}`} onClick={() => setOpen(true)} aria-haspopup="dialog">
+          <Sliders />{f.button}{activeCount > 0 && <span className="fcount">{activeCount}</span>}
+        </button>
       </div>
-      {dd("sort", d.catalog.sort, sortLabel(sort), sorts.map((k) =>
-        item(k, k === sort, sortLabel(k), () => { setOpen(null); go({ sort: k === "score" ? null : k }); })))}
-      {dd("plat", d.catalog.platforms, plats.length ? fmt(d.catalog.selected, { n: plats.length }) : d.common.all, <>
-        {providers.map((p) => item(String(p.id), plats.includes(p.id),
-          <><span className="pdot" style={{ background: platformStyle(p.name).color }} />{p.name}<span className="cnt">{p.count}</span></>,
-          () => savePlats(plats.includes(p.id) ? plats.filter((x) => x !== p.id) : [...plats, p.id])))}
-        {plats.length > 0 && <button className="clr" onClick={() => savePlats([])}>{d.catalog.clear}</button>}
-      </>)}
-      {dd("genre", d.catalog.genre, genres.find((g) => g.id === genre)?.name ?? d.common.all, <>
-        {item("", !genre, d.common.all, () => { setOpen(null); go({ genre: null }); })}
-        {genres.map((g) => item(String(g.id), g.id === genre, <>{g.name}<span className="cnt">{g.count}</span></>,
-          () => { setOpen(null); go({ genre: String(g.id) }); }))}
-      </>)}
-      {dd("year", f.year, extra.decade ? (extra.decade < 1980 ? f.older : `${extra.decade}+`) : f.any, <>
-        {item("", !extra.decade, f.any, () => { setOpen(null); go({ year: null }); })}
-        {DECADES.map((y) => item(String(y), extra.decade === y, y === 1970 ? `< 1980 (${f.older})` : `${y} – ${y + 9}`, () => { setOpen(null); go({ year: String(y === 1970 ? 1970 : y) }); }))}
-      </>)}
-      {dd("runtime", f.runtime, extra.runtime ? (kind === "movie" ? f.runtimeMovie : f.runtimeTv)[extra.runtime as "short"] : f.any, <>
-        {item("", !extra.runtime, f.any, () => { setOpen(null); go({ runtime: null }); })}
-        {(["short", "medium", "long"] as const).map((r) => item(r, extra.runtime === r, (kind === "movie" ? f.runtimeMovie : f.runtimeTv)[r], () => { setOpen(null); go({ runtime: r }); }))}
-      </>)}
-      {dd("score", f.score, extra.minScore ? fmt(f.scoreMin, { n: extra.minScore }) : f.any, <>
-        {item("", !extra.minScore, f.any, () => { setOpen(null); go({ score: null }); })}
-        {[60, 70, 80, 90].map((n) => item(String(n), extra.minScore === n, fmt(f.scoreMin, { n }), () => { setOpen(null); go({ score: String(n) }); }))}
-      </>)}
-      {languages.length > 1 && dd("lang", f.language, extra.language ? langName(extra.language) : f.any, <>
-        {item("", !extra.language, f.any, () => { setOpen(null); go({ lang: null }); })}
-        {languages.map((l) => item(l.code, extra.language === l.code, <>{langName(l.code)}<span className="cnt">{l.count}</span></>, () => { setOpen(null); go({ lang: l.code }); }))}
-      </>)}
-      {active > 0 && <button className="ddb reset" onClick={() => go({ genre: null, year: null, runtime: null, score: null, lang: null })}>{f.reset}</button>}
-    </div>
+      {chips.length > 0 && (
+        <div className="fchips">
+          {chips.map((c) => <button key={c.label} className="achip" onClick={c.clear}>{c.label}<X /></button>)}
+          <button className="link" onClick={() => { setPlats([]); go({ kind: state.kind, sort: "score", genre: null, year: null, runtime: null, score: null, lang: null }, []); }}>{f.reset}</button>
+        </div>
+      )}
+
+      {open && (
+        <div className="sheet-wrap" role="dialog" aria-modal="true" aria-label={f.title} onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
+          <div className="sheet">
+            <div className="sheet-head">
+              <h2>{f.title}</h2>
+              <button className="round sm" onClick={() => setOpen(false)} aria-label={d.common.close}><X /></button>
+            </div>
+            <div className="sheet-body">
+              <section><h3>{d.catalog.sort}</h3>
+                <div className="fopts">{sorts.filter((k) => !(draft.kind !== "tv" && k === "next")).map((k) => opt(draft.sort, k, sortLabel(k), (v) => setDraft({ ...draft, sort: v })))}</div></section>
+              <section><h3>{d.catalog.platforms}</h3>
+                <div className="fopts">
+                  {providers.map((p) => {
+                    const on = plats.includes(p.id);
+                    return (
+                      <button key={p.id} className={`fchip${on ? " on" : ""}`} aria-pressed={on} onClick={() => setPlats(on ? plats.filter((x) => x !== p.id) : [...plats, p.id])}>
+                        {p.logo_path ? <img src={`https://image.tmdb.org/t/p/w92${p.logo_path}`} alt="" /> : <span className="pdot" style={{ background: platformStyle(p.name).color }} />}
+                        {p.name}
+                      </button>
+                    );
+                  })}
+                </div></section>
+              <section><h3>{d.catalog.genre}</h3>
+                <div className="fopts">{opt(draft.genre, null as string | null, f.any, (v) => setDraft({ ...draft, genre: v }))}
+                  {genres.map((g) => opt(draft.genre, g.ids.join(".") as string | null, g.name, (v) => setDraft({ ...draft, genre: v })))}</div></section>
+              <section><h3>{f.year}</h3>
+                <div className="fopts">{opt(draft.year, null as number | null, f.any, (v) => setDraft({ ...draft, year: v }))}
+                  {DECADES.map((y) => opt(draft.year, y as number | null, decadeLabel(y), (v) => setDraft({ ...draft, year: v })))}</div></section>
+              <section><h3>{f.runtime}</h3>
+                <div className="fopts">{opt(draft.runtime, null as FilterState["runtime"], f.any, (v) => setDraft({ ...draft, runtime: v }))}
+                  {(["short", "medium", "long"] as const).map((r) => opt(draft.runtime, r as FilterState["runtime"], draft.kind === "all" ? `${f.runtimeMovie[r]} / ${f.runtimeTv[r]}` : rt(draft.kind)[r], (v) => setDraft({ ...draft, runtime: v })))}</div></section>
+              <section><h3>{f.score}</h3>
+                <div className="fopts">{opt(draft.score, null as number | null, f.any, (v) => setDraft({ ...draft, score: v }))}
+                  {[60, 70, 80, 90].map((n) => opt(draft.score, n as number | null, fmt(f.scoreMin, { n }), (v) => setDraft({ ...draft, score: v })))}</div></section>
+              {languages.length > 1 && (
+                <section><h3>{f.language}</h3>
+                  <div className="fopts">{opt(draft.lang, null as string | null, f.any, (v) => setDraft({ ...draft, lang: v }))}
+                    {languages.map((l) => opt(draft.lang, l.code as string | null, langName(l.code), (v) => setDraft({ ...draft, lang: v })))}</div></section>
+              )}
+            </div>
+            <div className="sheet-foot">
+              <button className="btn soft" onClick={() => { setPlats([]); setDraft({ kind: draft.kind, sort: "score", genre: null, year: null, runtime: null, score: null, lang: null }); }}>{f.reset}</button>
+              <button className="btn" onClick={apply}>{f.show}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

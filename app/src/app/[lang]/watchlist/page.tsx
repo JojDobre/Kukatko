@@ -9,6 +9,7 @@ import { daysUntil, epCode, fmtDate, rel, todayISO } from "@/lib/format";
 import { fmt } from "@/lib/i18n";
 import { page, titleHref, type LangParams } from "@/lib/page";
 import Poster, { Thumb } from "@/components/Poster";
+import QuickLinks from "@/components/QuickLinks";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +36,7 @@ export default async function Watchlist({ params }: { params: LangParams }) {
 
   return (
     <div className="bento">
-      <nav className="tile w4 quick" aria-label={d.watchlist.metaTitle}>
-        <Link className="chip big" href={h("/pick")}>{d.more.pick}</Link>
-        <Link className="chip big" href={h("/calendar?mine=1")}>{d.more.calendar}</Link>
-        <Link className="chip big" href={h("/stats")}>{d.more.stats}</Link>
-        <Link className="chip big" href={h("/together")}>{d.more.together}</Link>
-      </nav>
+      <QuickLinks lang={lang} />
       {progress.length > 0 && (
         <div className="tile w4">
           <div className="lbl"><span>{d.watched.inProgress}</span><span>{progress.length}</span></div>

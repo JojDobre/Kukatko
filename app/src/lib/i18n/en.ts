@@ -101,6 +101,7 @@ const en: Dict = {
     thanks: "Thanks for your support! Premium is active.", error: "Couldn't start the payment. Please try later.",
   },
   charts: {
+    bestAll: "Best overall", trending: "Trending now", bestOn: "Best on {p}", choose: "Chart", platformsAll: "All services", subtitleOn: "on: {p}",
     title: "Charts", metaDesc: "New on Netflix, Disney+, Prime Video and more, the best series and films, and what's out this week. Updated daily.",
     intro: "Charts update every day based on what arrived on or left each service.",
     thisWeek: "Out this week", newOn: "New on {p}", bestTvOn: "Best series on {p}",
@@ -184,12 +185,14 @@ const en: Dict = {
     google: "Add to Google Calendar", apple: "Add to Apple Calendar", copy: "Copy link", note: "This link is private, don't share it.",
   },
   filters: {
+    button: "Filters", show: "Show results", title: "Filters and sorting", kind: "Type",
     year: "Year", runtime: "Length", language: "Original language", score: "Rating", scoreMin: "at least {n}%", any: "Any", older: "older", reset: "Clear filters",
     runtimeMovie: { short: "under 90 min", medium: "90 to 120 min", long: "over 120 min" },
     runtimeTv: { short: "episodes under 30 min", medium: "episodes 30 to 60 min", long: "episodes over 60 min" },
   },
   promo: { label: "Ad" },
-  more: { pick: "Tonight?", calendar: "Calendar", platforms: "Services", stats: "My stats", together: "Watch together" },
+  more: {
+    pickSub: "3 picks for tonight", calendarSub: "When episodes come out", statsSub: "Your year in numbers", togetherSub: "Picks for you two", platformsSub: "What's new on your services", pick: "Tonight?", calendar: "Calendar", platforms: "Services", stats: "My stats", together: "Watch together" },
   episode: {
     metaTitle: "{show} {code}: {name}", metaDesc: "{show}, season {season}, episode {episode}: {name}. Synopsis, ratings and where to watch.",
     season: "Season {n}", episode: "Episode {n}", back: "Back to the series", prev: "Previous", next: "Next",

@@ -101,6 +101,7 @@ const cs: Dict = {
     thanks: "Děkujeme za podporu! Prémium je aktivní.", error: "Platbu se nepodařilo spustit. Zkus to později.",
   },
   charts: {
+    bestAll: "Nejlepší celkově", trending: "Populární teď", bestOn: "Nejlepší na platformě {p}", choose: "Žebříček", platformsAll: "Všechny platformy", subtitleOn: "na platformách: {p}",
     title: "Žebříčky", metaDesc: "Novinky na Netflixu, HBO Max, Disney+ a dalších, nejlepší seriály a filmy a co vychází tento týden. Aktualizováno každý den.",
     intro: "Žebříčky se aktualizují každý den podle toho, co přibylo nebo zmizelo z platforem.",
     thisWeek: "Vychází tento týden", newOn: "Novinky na platformě {p}", bestTvOn: "Nejlepší seriály na platformě {p}",
@@ -184,12 +185,14 @@ const cs: Dict = {
     google: "Přidat do Google Kalendáře", apple: "Přidat do Apple Kalendáře", copy: "Kopírovat odkaz", note: "Odkaz je soukromý, nikomu ho neposílej.",
   },
   filters: {
+    button: "Filtry", show: "Zobrazit výsledky", title: "Filtry a řazení", kind: "Typ",
     year: "Rok", runtime: "Délka", language: "Původní jazyk", score: "Hodnocení", scoreMin: "alespoň {n} %", any: "Jakékoli", older: "starší", reset: "Zrušit filtry",
     runtimeMovie: { short: "do 90 min", medium: "90 až 120 min", long: "nad 120 min" },
     runtimeTv: { short: "díly do 30 min", medium: "díly 30 až 60 min", long: "díly nad 60 min" },
   },
   promo: { label: "Reklama" },
-  more: { pick: "Co dnes?", calendar: "Kalendář", platforms: "Platformy", stats: "Moje statistiky", together: "Sledujte spolu" },
+  more: {
+    pickSub: "3 tipy na dnešní večer", calendarSub: "Kdy vycházejí díly", statsSub: "Tvůj rok v číslech", togetherSub: "Tipy pro vás dva", platformsSub: "Co je nového na tvých službách", pick: "Co dnes?", calendar: "Kalendář", platforms: "Platformy", stats: "Moje statistiky", together: "Sledujte spolu" },
   episode: {
     metaTitle: "{show} {code}: {name}", metaDesc: "{show}, {season}. řada, {episode}. díl: {name}. Popis, hodnocení a kde sledovat.",
     season: "{n}. řada", episode: "{n}. díl", back: "Zpět na seriál", prev: "Předchozí", next: "Další",

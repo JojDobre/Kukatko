@@ -100,6 +100,7 @@ const sk = {
     thanks: "Ďakujeme za podporu! Prémium je aktívne.", error: "Platbu sa nepodarilo spustiť. Skús to neskôr.",
   },
   charts: {
+    bestAll: "Najlepšie celkovo", trending: "Populárne teraz", bestOn: "Najlepšie na platforme {p}", choose: "Rebríček", platformsAll: "Všetky platformy", subtitleOn: "na platformách: {p}",
     title: "Rebríčky", metaDesc: "Novinky na Netflixe, HBO Max, Disney+ a ďalších, najlepšie seriály a filmy a čo vychádza tento týždeň. Aktualizované každý deň.",
     intro: "Rebríčky sa aktualizujú každý deň podľa toho, čo pribudlo alebo zmizlo z platforiem.",
     thisWeek: "Vychádza tento týždeň", newOn: "Nové na platforme {p}", bestTvOn: "Najlepšie seriály na platforme {p}",
@@ -183,12 +184,14 @@ const sk = {
     google: "Pridať do Google Kalendára", apple: "Pridať do Apple Kalendára", copy: "Kopírovať odkaz", note: "Odkaz je súkromný, nikomu ho neposielaj.",
   },
   filters: {
+    button: "Filtre", show: "Zobraziť výsledky", title: "Filtre a zoradenie", kind: "Typ",
     year: "Rok", runtime: "Dĺžka", language: "Pôvodný jazyk", score: "Hodnotenie", scoreMin: "aspoň {n} %", any: "Akékoľvek", older: "staršie", reset: "Zrušiť filtre",
     runtimeMovie: { short: "do 90 min", medium: "90 až 120 min", long: "nad 120 min" },
     runtimeTv: { short: "epizódy do 30 min", medium: "epizódy 30 až 60 min", long: "epizódy nad 60 min" },
   },
   promo: { label: "Reklama" },
-  more: { pick: "Čo dnes?", calendar: "Kalendár", platforms: "Platformy", stats: "Moje štatistiky", together: "Pozerajte spolu" },
+  more: {
+    pickSub: "3 tipy na dnešný večer", calendarSub: "Kedy vychádzajú epizódy", statsSub: "Tvoj rok v číslach", togetherSub: "Tipy pre vás dvoch", platformsSub: "Čo je nové na tvojich službách", pick: "Čo dnes?", calendar: "Kalendár", platforms: "Platformy", stats: "Moje štatistiky", together: "Pozerajte spolu" },
   episode: {
     metaTitle: "{show} {code}: {name}", metaDesc: "{show}, {season}. sezóna, {episode}. epizóda: {name}. Popis, hodnotenie a kde pozerať.",
     season: "{n}. sezóna", episode: "{n}. epizóda", back: "Späť na seriál", prev: "Predchádzajúca", next: "Ďalšia",

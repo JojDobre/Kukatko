@@ -101,6 +101,7 @@ const de: Dict = {
     thanks: "Danke für deine Unterstützung! Premium ist aktiv.", error: "Die Zahlung konnte nicht gestartet werden. Bitte später erneut versuchen.",
   },
   charts: {
+    bestAll: "Die besten insgesamt", trending: "Gerade beliebt", bestOn: "Die besten bei {p}", choose: "Chart", platformsAll: "Alle Dienste", subtitleOn: "bei: {p}",
     title: "Charts", metaDesc: "Neu bei Netflix, Disney+, Prime Video und Co., die besten Serien und Filme und was diese Woche erscheint. Täglich aktualisiert.",
     intro: "Die Charts werden täglich danach aktualisiert, was bei den Diensten neu ist oder verschwunden ist.",
     thisWeek: "Erscheint diese Woche", newOn: "Neu bei {p}", bestTvOn: "Die besten Serien bei {p}",
@@ -184,12 +185,14 @@ const de: Dict = {
     google: "Zu Google Kalender hinzufügen", apple: "Zu Apple Kalender hinzufügen", copy: "Link kopieren", note: "Der Link ist privat, teile ihn nicht.",
   },
   filters: {
+    button: "Filter", show: "Ergebnisse zeigen", title: "Filter und Sortierung", kind: "Typ",
     year: "Jahr", runtime: "Länge", language: "Originalsprache", score: "Bewertung", scoreMin: "mindestens {n} %", any: "Beliebig", older: "älter", reset: "Filter zurücksetzen",
     runtimeMovie: { short: "unter 90 Min.", medium: "90 bis 120 Min.", long: "über 120 Min." },
     runtimeTv: { short: "Folgen unter 30 Min.", medium: "Folgen 30 bis 60 Min.", long: "Folgen über 60 Min." },
   },
   promo: { label: "Anzeige" },
-  more: { pick: "Heute?", calendar: "Kalender", platforms: "Dienste", stats: "Meine Statistik", together: "Gemeinsam schauen" },
+  more: {
+    pickSub: "3 Tipps für heute Abend", calendarSub: "Wann neue Folgen kommen", statsSub: "Dein Jahr in Zahlen", togetherSub: "Tipps für euch zwei", platformsSub: "Neu bei deinen Diensten", pick: "Heute?", calendar: "Kalender", platforms: "Dienste", stats: "Meine Statistik", together: "Gemeinsam schauen" },
   episode: {
     metaTitle: "{show} {code}: {name}", metaDesc: "{show}, Staffel {season}, Folge {episode}: {name}. Inhalt, Bewertungen und wo streamen.",
     season: "Staffel {n}", episode: "Folge {n}", back: "Zurück zur Serie", prev: "Vorherige", next: "Nächste",

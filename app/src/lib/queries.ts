@@ -57,22 +57,27 @@ export const SORTS = {
 export type SortKey = keyof typeof SORTS;
 export const isSort = (s: unknown): s is SortKey => typeof s === "string" && s in SORTS;
 export const isKind = (s: unknown): s is Kind => s === "tv" || s === "movie";
+/** V katalógu môžeme zobraziť aj seriály a filmy spolu. */
+export type KindOpt = Kind | "all";
+const kindCond = (k: KindOpt) => (k === "all" ? sql`TRUE` : sql`t.kind = ${k}`);
 
 export const PAGE_SIZE = 30;
 
 /** Dĺžka: pri filmoch celý film, pri seriáloch dĺžka epizódy. */
-function runtimeCond(kind: Kind, r: "short" | "medium" | "long") {
+function runtimeOne(kind: Kind, r: "short" | "medium" | "long") {
   const [a, b] = kind === "movie" ? [90, 120] : [30, 60];
-  if (r === "short") return sql`AND t.runtime > 0 AND t.runtime < ${a}`;
-  if (r === "medium") return sql`AND t.runtime BETWEEN ${a} AND ${b}`;
-  return sql`AND t.runtime > ${b}`;
+  const c = r === "short" ? sql`t.runtime > 0 AND t.runtime < ${a}` : r === "medium" ? sql`t.runtime BETWEEN ${a} AND ${b}` : sql`t.runtime > ${b}`;
+  return sql`(t.kind = ${kind} AND ${c})`;
+}
+function runtimeCond(kind: KindOpt, r: "short" | "medium" | "long") {
+  return kind === "all" ? sql`AND (${runtimeOne("tv", r)} OR ${runtimeOne("movie", r)})` : sql`AND ${runtimeOne(kind, r)}`;
 }
 
 /** Pôvodné jazyky titulov v regióne (pre filter). */
-export function languageList(c: Ctx, kind: Kind) {
+export function languageList(c: Ctx, kind: KindOpt) {
   return cached(`langs:${c.region}:${kind}`, TTL, () => sql<{ code: string; count: number }[]>`
     SELECT original_language AS code, count(*)::int AS count FROM titles t
-    WHERE t.kind = ${kind} AND ${inRegion(c)} AND original_language IS NOT NULL
+    WHERE ${kindCond(kind)} AND ${inRegion(c)} AND original_language IS NOT NULL
     GROUP BY 1 HAVING count(*) >= 3 ORDER BY 2 DESC LIMIT 25`);
 }
 
@@ -81,14 +86,14 @@ export function catalog(c: Ctx, o: CatalogOpts) {
 }
 
 export type CatalogOpts = {
-  kind: Kind; sort: SortKey; providers: number[]; genre: number | null; page: number;
+  kind: KindOpt; sort: SortKey; providers: number[]; genre: number[]; page: number;
   decade?: number | null; runtime?: "short" | "medium" | "long" | null; language?: string | null; minScore?: number | null;
 };
 
 async function catalogRaw(c: Ctx, o: CatalogOpts) {
-  const sort = o.kind === "movie" && o.sort === "next" ? "score" : o.sort;
-  const cond = sql`t.kind = ${o.kind} AND ${inRegion(c)} ${onProviders(c, o.providers)}
-    ${o.genre ? sql`AND ${o.genre} = ANY(t.genre_ids)` : sql``}
+  const sort = o.kind !== "tv" && o.sort === "next" ? "score" : o.sort;
+  const cond = sql`${kindCond(o.kind)} AND ${inRegion(c)} ${onProviders(c, o.providers)}
+    ${o.genre.length ? sql`AND t.genre_ids && ${o.genre}::int[]` : sql``}
     ${sort === "next" ? sql`AND t.next_air_date >= ${todayISO()}` : sql``}
     ${sort === "new" ? sql`AND t.release_date <= ${todayISO()}` : sql``}
     ${o.decade ? (o.decade < 1980 ? sql`AND t.year < 1980` : sql`AND t.year BETWEEN ${o.decade} AND ${o.decade + 9}`) : sql``}
@@ -120,6 +125,13 @@ export function topRated(c: Ctx, kind: Kind | null, limit: number, providers: nu
     ORDER BY t.score DESC, t.popularity DESC LIMIT ${limit}`);
 }
 
+/** Najpopulárnejšie práve teraz (podľa popularity v TMDB). */
+export function trending(c: Ctx, kind: Kind | null, limit: number, providers: number[] = []) {
+  return cached(`trend:${c.lang}:${kind}:${limit}:${providers}`, TTL, () => sql<Card[]>`SELECT ${card(c)} FROM titles t
+    WHERE ${inRegion(c)} ${kind ? sql`AND t.kind = ${kind}` : sql``} ${onProviders(c, providers)}
+    ORDER BY t.popularity DESC LIMIT ${limit}`);
+}
+
 /** Novinky na platformách (titul sa objavil v posledných dňoch). */
 export function newArrivals(c: Ctx, o: { limit: number; providerId?: number; kind?: Kind; days?: number; providers?: number[] }) {
   return cached(`new:${c.lang}:${JSON.stringify(o)}`, TTL, () => sql<(Card & { added: Date; added_provider: number })[]>`
@@ -136,12 +148,13 @@ export function newArrivals(c: Ctx, o: { limit: number; providerId?: number; kin
 }
 
 /** Tituly, ktoré nedávno zmizli z platformy. */
-export function removedRecently(c: Ctx, limit: number, days = 14, providerId?: number) {
-  return cached(`rm:${c.lang}:${limit}:${days}:${providerId}`, TTL, () => sql<(Card & { removed: Date; removed_provider: string })[]>`
+export function removedRecently(c: Ctx, limit: number, days = 14, providerId?: number, providers: number[] = []) {
+  return cached(`rm:${c.lang}:${limit}:${days}:${providerId}:${providers}`, TTL, () => sql<(Card & { removed: Date; removed_provider: string })[]>`
     SELECT ${card(c)}, a.removed_at AS removed, p.name AS removed_provider FROM (
       SELECT DISTINCT ON (title_id) title_id, removed_at, provider_id FROM availability
       WHERE region = ${c.region} AND removed_at > now() - make_interval(days => ${days})
         ${providerId ? sql`AND provider_id = ${providerId}` : sql``}
+        ${providers.length ? sql`AND provider_id = ANY(${providers}::int[])` : sql``}
       ORDER BY title_id, removed_at DESC
     ) a JOIN titles t ON t.id = a.title_id JOIN providers p ON p.id = a.provider_id
     ORDER BY a.removed_at DESC, t.popularity DESC LIMIT ${limit}`);
@@ -156,14 +169,26 @@ export function providerList(region: string, min = 3) {
     GROUP BY 1 HAVING count(*) >= ${min} ORDER BY count DESC LIMIT 20`);
 }
 
-export function genreList(c: Ctx, kind: Kind) {
-  return cached(`genres:${c.lang}:${kind}`, TTL, () => sql<{ id: number; name: string; count: number }[]>`
-    SELECT g.id, coalesce(gl.name, ge.name, g.id::text) AS name, g.count FROM (
-      SELECT unnest(genre_ids) AS id, count(*)::int AS count FROM titles t WHERE t.kind = ${kind} AND ${inRegion(c)} GROUP BY 1
+/** Žánre v regióne. Pri „všetko“ sa rovnaké názvy zo seriálov a filmov zlúčia (ids = všetky ich id). */
+export function genreList(c: Ctx, kind: KindOpt) {
+  return cached(`genres:${c.lang}:${kind}`, TTL, () => sql<{ ids: number[]; name: string; count: number }[]>`
+    SELECT array_agg(DISTINCT g.id ORDER BY g.id) AS ids, coalesce(gl.name, ge.name, g.id::text) AS name, sum(g.count)::int AS count FROM (
+      SELECT t.kind, unnest(t.genre_ids) AS id, count(*)::int AS count FROM titles t WHERE ${kindCond(kind)} AND ${inRegion(c)} GROUP BY 1, 2
     ) g
-    LEFT JOIN genres gl ON gl.kind = ${kind} AND gl.id = g.id AND gl.lang = ${c.lang}
-    LEFT JOIN genres ge ON ge.kind = ${kind} AND ge.id = g.id AND ge.lang = 'en'
-    ORDER BY 2`);
+    LEFT JOIN genres gl ON gl.kind = g.kind AND gl.id = g.id AND gl.lang = ${c.lang}
+    LEFT JOIN genres ge ON ge.kind = g.kind AND ge.id = g.id AND ge.lang = 'en'
+    GROUP BY 2 ORDER BY 2`);
+}
+
+/** Všetky názvy žánrov pre jazyk: kľúč „kind:id“. */
+export function genreMap(lang: Lang) {
+  return cached(`gmap:${lang}`, TTL, async () => {
+    const rows = await sql<{ kind: string; id: number; name: string; lang: string }[]>`
+      SELECT kind, id, name, lang FROM genres WHERE lang IN (${lang}, 'en') ORDER BY (lang = ${lang})`;
+    const m: Record<string, string> = {};
+    for (const r of rows) m[`${r.kind}:${r.id}`] = r.name;
+    return m;
+  });
 }
 
 export async function genreNames(kind: Kind, ids: number[], lang: Lang): Promise<string[]> {

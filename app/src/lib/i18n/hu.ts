@@ -101,6 +101,7 @@ const hu: Dict = {
     thanks: "Köszönjük a támogatást! A prémium aktív.", error: "Nem sikerült elindítani a fizetést. Próbáld később.",
   },
   charts: {
+    bestAll: "A legjobbak összesen", trending: "Most népszerű", bestOn: "A legjobbak: {p}", choose: "Toplista", platformsAll: "Összes szolgáltatás", subtitleOn: "itt: {p}",
     title: "Toplisták", metaDesc: "Újdonságok a Netflixen, a Max-on, a Disney+-on és máshol, a legjobb sorozatok és filmek, és mi jelenik meg ezen a héten. Naponta frissítve.",
     intro: "A toplisták naponta frissülnek aszerint, mi került fel vagy le a szolgáltatásokról.",
     thisWeek: "Ezen a héten jelenik meg", newOn: "Újdonságok: {p}", bestTvOn: "A legjobb sorozatok: {p}",
@@ -184,12 +185,14 @@ const hu: Dict = {
     google: "Hozzáadás a Google Naptárhoz", apple: "Hozzáadás az Apple Naptárhoz", copy: "Link másolása", note: "A link privát, ne küldd el senkinek.",
   },
   filters: {
+    button: "Szűrők", show: "Találatok mutatása", title: "Szűrők és rendezés", kind: "Típus",
     year: "Év", runtime: "Hossz", language: "Eredeti nyelv", score: "Értékelés", scoreMin: "legalább {n}%", any: "Bármilyen", older: "régebbi", reset: "Szűrők törlése",
     runtimeMovie: { short: "90 perc alatt", medium: "90–120 perc", long: "120 perc felett" },
     runtimeTv: { short: "epizódok 30 perc alatt", medium: "epizódok 30–60 perc", long: "epizódok 60 perc felett" },
   },
   promo: { label: "Hirdetés" },
-  more: { pick: "Mit ma?", calendar: "Naptár", platforms: "Szolgáltatások", stats: "Statisztikáim", together: "Nézzétek együtt" },
+  more: {
+    pickSub: "3 ajánlat ma estére", calendarSub: "Mikor jönnek az epizódok", statsSub: "Az éved számokban", togetherSub: "Ajánlatok kettőtöknek", platformsSub: "Újdonságok a szolgáltatásaidon", pick: "Mit ma?", calendar: "Naptár", platforms: "Szolgáltatások", stats: "Statisztikáim", together: "Nézzétek együtt" },
   episode: {
     metaTitle: "{show} {code}: {name}", metaDesc: "{show}, {season}. évad, {episode}. rész: {name}. Leírás, értékelés és hol nézhető.",
     season: "{n}. évad", episode: "{n}. rész", back: "Vissza a sorozathoz", prev: "Előző", next: "Következő",
