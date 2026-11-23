@@ -13,6 +13,12 @@ while true; do
   today=$(date +%F)
   file="/backups/kukatko-$today.sql.gz"
   if [ "$(date +%H)" -ge "$HOUR" ] && [ ! -f "$file" ]; then
+    # Kým robot nenaplní databázu (napr. hneď po prvom spustení), zálohu nerobíme.
+    titles=$(psql -h db -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "SELECT count(*) FROM titles" 2>/dev/null || echo 0)
+    if [ "${titles:-0}" -eq 0 ] 2>/dev/null; then
+      sleep 600
+      continue
+    fi
     if pg_dump -h db -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip > /backups/.tmp.sql.gz; then
       mv /backups/.tmp.sql.gz "$file"
       find /backups -name 'kukatko-*.sql.gz' -mtime +"$KEEP" -delete
