@@ -79,7 +79,9 @@ const en: Dict = {
     setup: "Set up notifications", waitingSeason: "Waiting for a new season", allHaveNext: "Every series you follow has a next episode announced.",
     mightLike: "You might like", startWith: "Try these to start", movies: "Followed films", notStreaming: "not streaming yet",
   },
+  tvguide: { nav: "TV guide", title: "TV guide", metaTitle: "What's on TV today: films and series with ratings", intro: "Films and series on TV with ratings. Times are for {region}.", bestToday: "Best on TV today", bestMoviesToday: "Best films on TV today", full: "Full TV guide", byScore: "By rating", byTime: "By time", now: "On now", empty: "We don't have a TV guide for {region} on this day yet.", onTv: "On TV", channels: "Channels", allChannels: "All channels" },
   profile: {
+    regionSection: "Country and services", region: "Country", regionHint: "Streaming services, their catalogues and the TV guide differ by country.", myPlatforms: "My services", myPlatformsHint: "Pick what you subscribe to. The catalogue, home page and notifications adapt to it.", platformsNone: "Nothing selected = we show all services.", noProviders: "We don't have services for this country yet. They'll appear after the next sync.",
     metaTitle: "Profile and notifications", notifications: "Notifications", pushDevice: "Notifications on this device",
     pushHint: "A push message when something you follow happens", pushUnsupported: "This browser doesn't support notifications. On iPhone, add the site to your home screen first.",
     pushBlocked: "Notifications are blocked in your browser settings.",

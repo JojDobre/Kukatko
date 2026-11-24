@@ -79,7 +79,9 @@ const pl: Dict = {
     setup: "Ustaw powiadomienia", waitingSeason: "Czeka na nowy sezon", allHaveNext: "Każdy obserwowany serial ma ogłoszony następny odcinek.",
     mightLike: "Może ci się spodobać", startWith: "Na początek spróbuj", movies: "Obserwowane filmy", notStreaming: "jeszcze nie w streamingu",
   },
+  tvguide: { nav: "Program TV", title: "Program TV", metaTitle: "Program TV na dziś: filmy i seriale w telewizji z ocenami", intro: "Filmy i seriale w telewizji z ocenami. Godziny dla kraju {region}.", bestToday: "Najlepsze dziś w TV", bestMoviesToday: "Najlepsze filmy dziś w TV", full: "Cały program TV", byScore: "Według oceny", byTime: "Według godziny", now: "Teraz", empty: "Na ten dzień nie mamy jeszcze programu TV dla kraju {region}.", onTv: "W telewizji", channels: "Stacje", allChannels: "Wszystkie stacje" },
   profile: {
+    regionSection: "Kraj i platformy", region: "Kraj", regionHint: "Platformy, ich oferta filmów i program TV różnią się w zależności od kraju.", myPlatforms: "Moje platformy", myPlatformsHint: "Wybierz, co subskrybujesz. Katalog, strona główna i powiadomienia dopasują się do tego.", platformsNone: "Nic nie wybrano = pokazujemy wszystkie platformy.", noProviders: "Dla tego kraju nie mamy jeszcze platform. Pojawią się po najbliższej synchronizacji.",
     metaTitle: "Profil i powiadomienia", notifications: "Powiadomienia", pushDevice: "Powiadomienia na tym urządzeniu",
     pushHint: "Wiadomość push, gdy wydarzy się coś, co obserwujesz", pushUnsupported: "Ta przeglądarka nie obsługuje powiadomień. Na iPhonie najpierw dodaj stronę do ekranu głównego.",
     pushBlocked: "Powiadomienia są zablokowane w ustawieniach przeglądarki.",

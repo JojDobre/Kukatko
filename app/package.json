@@ -12,6 +12,7 @@
     "sync": "tsx worker/cli.ts sync",
     "sync:hourly": "tsx worker/cli.ts hourly",
     "notify": "tsx worker/cli.ts notify",
+    "tv": "tsx worker/cli.ts tv",
     "migrate": "tsx worker/cli.ts migrate",
     "seed:demo": "tsx worker/cli.ts seed-demo",
     "vapid": "tsx worker/cli.ts vapid",

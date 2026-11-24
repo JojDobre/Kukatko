@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { userRegion } from "@/lib/prefs";
 import { permanentRedirect } from "next/navigation";
 import { deviceId } from "@/lib/device";
 import { episodeNeighbors, episodesFor, myEpisodeState, reviewsFor } from "@/lib/extra";
 import { texts } from "@/lib/queries";
 import { epCode, fmtDate, img, todayISO, tone } from "@/lib/format";
 import { fmt, plural } from "@/lib/i18n";
-import { ALL_LOCALES } from "@/lib/locales";
+import { ALL_LOCALES, regionName } from "@/lib/locales";
 import { platformStyle } from "@/lib/platforms";
 import { page, personHref, titleHref } from "@/lib/page";
 import { alternates } from "@/lib/seo";
@@ -55,7 +56,7 @@ export default async function EpisodePage({ params }: { params: EpParams }) {
   const tmdbPct = e.tmdb_votes >= 5 && e.tmdb_rating != null ? Math.round(e.tmdb_rating * 10) : null;
   const score = userPct ?? tmdbPct;
   const still = img(e.still_path, "w1280") ?? img(t.backdrop_path, "w1280");
-  const region = ALL_LOCALES[lang].region;
+  const region = await userRegion(lang);
   const providers = t.providers[region] ?? [];
   const epHref = (s: number, n: number) => `${showHref}/season/${s}/episode/${n}`;
   const inSeason = seasonEps.filter((x) => x.season === season);
@@ -119,7 +120,7 @@ export default async function EpisodePage({ params }: { params: EpParams }) {
 
       {providers.length > 0 && (
         <div className="tile w2">
-          <span className="lbl"><span>{d.title.whereToWatch}</span><span>{ALL_LOCALES[lang].regionName}</span></span>
+          <span className="lbl"><span>{d.title.whereToWatch}</span><span>{regionName(region, lang)}</span></span>
           {providers.map((p) => {
             const st = platformStyle(p.name);
             return (

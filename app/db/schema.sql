@@ -305,3 +305,40 @@ ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_device_id_title_id_key;
 CREATE UNIQUE INDEX IF NOT EXISTS reviews_unique_idx ON reviews (device_id, title_id, season, episode);
 DROP INDEX IF EXISTS reviews_title_idx;
 CREATE INDEX IF NOT EXISTS reviews_target_idx ON reviews (title_id, season, episode, created_at DESC) WHERE status = 'visible';
+
+-- v5: TV program (XMLTV) spárovaný s titulmi
+CREATE TABLE IF NOT EXISTS tv_channels (
+  region     text NOT NULL,
+  id         text NOT NULL,
+  name       text NOT NULL,
+  icon       text,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (region, id)
+);
+CREATE TABLE IF NOT EXISTS tv_airings (
+  id         bigserial PRIMARY KEY,
+  region     text NOT NULL,
+  channel_id text NOT NULL,
+  starts_at  timestamptz NOT NULL,
+  ends_at    timestamptz,
+  title      text NOT NULL,
+  sub_title  text,
+  year       int,
+  category   text,
+  season     int,
+  episode    int,
+  norm       text NOT NULL,
+  title_id   int REFERENCES titles(id) ON DELETE SET NULL,
+  UNIQUE (region, channel_id, starts_at)
+);
+CREATE INDEX IF NOT EXISTS tv_airings_time_idx ON tv_airings (region, starts_at);
+CREATE INDEX IF NOT EXISTS tv_airings_title_idx ON tv_airings (title_id, starts_at) WHERE title_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS tv_airings_norm_idx ON tv_airings (norm) WHERE title_id IS NULL;
+-- Výsledok párovania názvu z TV na titul (aj neúspešný, aby sme sa TMDB nepýtali stále dookola).
+CREATE TABLE IF NOT EXISTS tv_matches (
+  norm       text NOT NULL,
+  year       int NOT NULL DEFAULT 0,
+  title_id   int REFERENCES titles(id) ON DELETE CASCADE,
+  checked_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (norm, year)
+);

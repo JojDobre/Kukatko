@@ -79,7 +79,9 @@ const de: Dict = {
     setup: "Benachrichtigungen einrichten", waitingSeason: "Wartet auf neue Staffel", allHaveNext: "Für jede gemerkte Serie ist eine nächste Folge angekündigt.",
     mightLike: "Könnte dir gefallen", startWith: "Zum Einstieg", movies: "Gemerkte Filme", notStreaming: "noch nicht streambar",
   },
+  tvguide: { nav: "TV-Programm", title: "TV-Programm", metaTitle: "TV-Programm heute: Filme und Serien im Fernsehen mit Bewertung", intro: "Filme und Serien im Fernsehen mit Bewertung. Uhrzeiten für {region}.", bestToday: "Heute das Beste im TV", bestMoviesToday: "Die besten Filme heute im TV", full: "Ganzes TV-Programm", byScore: "Nach Bewertung", byTime: "Nach Uhrzeit", now: "Läuft jetzt", empty: "Für diesen Tag haben wir noch kein TV-Programm für {region}.", onTv: "Im Fernsehen", channels: "Sender", allChannels: "Alle Sender" },
   profile: {
+    regionSection: "Land und Dienste", region: "Land", regionHint: "Streamingdienste, ihr Angebot und das TV-Programm unterscheiden sich je nach Land.", myPlatforms: "Meine Dienste", myPlatformsHint: "Wähle, was du abonniert hast. Katalog, Startseite und Benachrichtigungen passen sich an.", platformsNone: "Nichts ausgewählt = wir zeigen alle Dienste.", noProviders: "Für dieses Land haben wir noch keine Dienste. Sie erscheinen nach der nächsten Synchronisierung.",
     metaTitle: "Profil und Benachrichtigungen", notifications: "Benachrichtigungen", pushDevice: "Benachrichtigungen auf diesem Gerät",
     pushHint: "Eine Push-Nachricht, wenn bei deinen Titeln etwas passiert", pushUnsupported: "Dieser Browser unterstützt keine Benachrichtigungen. Auf dem iPhone füge die Seite zuerst zum Home-Bildschirm hinzu.",
     pushBlocked: "Benachrichtigungen sind in deinen Browsereinstellungen blockiert.",

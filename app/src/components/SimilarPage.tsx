@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { deviceId } from "@/lib/device";
+import { userRegion } from "@/lib/prefs";
 import { followedIds, similar, texts, type TitleFull } from "@/lib/queries";
 import { dict, fmt } from "@/lib/i18n";
 import { ALL_LOCALES, type Lang } from "@/lib/locales";
@@ -21,7 +22,7 @@ export function similarMetadata(t: TitleFull, lang: Lang) {
 export default async function SimilarPage({ t, lang }: { t: TitleFull; lang: Lang }) {
   const d = dict(lang);
   const tx = texts(t, lang);
-  const ctx = { lang, region: ALL_LOCALES[lang].region };
+  const ctx = { lang, region: await userRegion(lang) };
   const [rows, fol] = await Promise.all([similar(t, ctx, 36), followedIds(await deviceId())]);
   const ld = { "@context": "https://schema.org", "@type": "ItemList", itemListElement: rows.slice(0, 20).map((r, i) => ({ "@type": "ListItem", position: i + 1, name: r.name })) };
   return (

@@ -9,6 +9,10 @@ import Transfer from "@/components/Transfer";
 import PremiumBox from "@/components/PremiumBox";
 import ImportBox from "@/components/ImportBox";
 import IcalBox from "@/components/IcalBox";
+import RegionPlatforms from "@/components/RegionPlatforms";
+import { providerList } from "@/lib/queries";
+import { selectedPlats } from "@/lib/prefs";
+import { REGIONS, regionName } from "@/lib/locales";
 
 export const dynamic = "force-dynamic";
 
@@ -18,17 +22,20 @@ export async function generateMetadata({ params }: { params: LangParams }): Prom
 }
 
 export default async function Profile({ params, searchParams }: { params: LangParams; searchParams: Promise<{ premium?: string; code?: string }> }) {
-  const { lang, d } = await page(params);
+  const { lang, d, ctx } = await page(params);
   const sp = await searchParams;
   const dev = await deviceId();
   const info = await deviceInfo(dev);
   const premiumEnabled = process.env.PREMIUM_ENABLED === "true" && !!process.env.STRIPE_SECRET_KEY;
   const active = !!info.premiumUntil && info.premiumUntil > new Date();
   // V Android appke nákup neponúkame (Google Play vyžaduje vlastné platby). Zakúpené prémium však platí.
+  const [providers, selected] = await Promise.all([providerList(ctx.region, 1), selectedPlats(ctx.region)]);
+  const regions = REGIONS.map((code) => ({ code, name: regionName(code, lang) })).sort((a, b) => a.name.localeCompare(b.name, lang));
   const showPremium = premiumEnabled && (!(await inApp()) || active);
   return (
     <div className="bento">
       {sp.premium === "ok" && <div className="tile w4 okbox">{d.premium.thanks}</div>}
+      <RegionPlatforms key={ctx.region} regions={regions} region={ctx.region} providers={providers.map(({ id, name, count }) => ({ id, name, count }))} selected={selected} />
       <Settings initial={info.prefs} premium={active} premiumEnabled={premiumEnabled} />
       <Transfer initialCode={sp.code} />
       <IcalBox />

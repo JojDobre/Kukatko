@@ -78,7 +78,9 @@ const sk = {
     setup: "Nastaviť upozornenia", waitingSeason: "Čaká sa na novú sezónu", allHaveNext: "Všetky sledované seriály majú ohlásenú ďalšiu epizódu.",
     mightLike: "Mohlo by sa ti páčiť", startWith: "Na začiatok skús", movies: "Sledované filmy", notStreaming: "zatiaľ nie je na streamingu",
   },
+  tvguide: { nav: "TV program", title: "TV program", metaTitle: "TV program dnes: filmy a seriály v televízii s hodnotením", intro: "Filmy a seriály v televízii s hodnotením. Časy sú pre krajinu {region}.", bestToday: "Najlepšie v TV dnes", bestMoviesToday: "Najlepšie filmy v TV dnes", full: "Celý TV program", byScore: "Podľa hodnotenia", byTime: "Podľa času", now: "Práve beží", empty: "Na tento deň zatiaľ nemáme TV program pre krajinu {region}.", onTv: "V televízii", channels: "Stanice", allChannels: "Všetky stanice" },
   profile: {
+    regionSection: "Krajina a platformy", region: "Krajina", regionHint: "Platformy, ich ponuka filmov a TV program sa líšia podľa krajiny.", myPlatforms: "Moje platformy", myPlatformsHint: "Vyber, čo máš predplatené. Katalóg, domovská stránka aj upozornenia sa tomu prispôsobia.", platformsNone: "Nič nevybraté = ukazujeme všetky platformy.", noProviders: "Pre túto krajinu ešte nemáme platformy. Doplnia sa po najbližšej synchronizácii.",
     metaTitle: "Profil a upozornenia", notifications: "Upozornenia", pushDevice: "Upozornenia v tomto zariadení",
     pushHint: "Push správa, keď sa stane niečo, čo sleduješ", pushUnsupported: "Tento prehliadač upozornenia nepodporuje. Na iPhone si najprv pridaj stránku na plochu.",
     pushBlocked: "Upozornenia máš zablokované v nastaveniach prehliadača.",

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { after } from "next/server";
+import { userRegion } from "@/lib/prefs";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { deviceId, isPremium } from "@/lib/device";
@@ -9,7 +10,8 @@ import { idSet, movieSeen } from "@/lib/features";
 import TitleActions from "./TitleActions";
 import { daysUntil, epCode, fmtDate, img, rel, todayISO, tone } from "@/lib/format";
 import { dict, fmt, plural } from "@/lib/i18n";
-import { ALL_LOCALES, type Lang } from "@/lib/locales";
+import { ALL_LOCALES, regionName, regionTz, type Lang } from "@/lib/locales";
+import { tvForTitle } from "@/lib/tvguide";
 import { platformStyle } from "@/lib/platforms";
 import { personHref, titleHref } from "@/lib/page";
 import { SITE, SITE_URL } from "@/lib/site";
@@ -51,7 +53,7 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
   const tx = texts(t, lang);
   if (slug !== `${t.tmdb_id}-${tx.slug}`) permanentRedirect(titleHref(lang, { kind: t.kind, tmdb_id: t.tmdb_id, slug: tx.slug }));
 
-  const region = ALL_LOCALES[lang].region;
+  const region = await userRegion(lang);
   const ctx = { lang, region };
   const dev = await deviceId();
   const fol = await followedIds(dev);
@@ -60,10 +62,11 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
   // Roboty vyhľadávačov sťahovanie nespúšťajú (inak by prehľadávanie webu zaťažilo TMDB).
   const bot = /bot|crawl|spider|slurp|preview/i.test((await headers()).get("user-agent") ?? "");
   if (t.kind === "tv" && !t.seasons_synced_at && !bot && tmdbConfigured()) after(() => syncAllSeasonsOnce(t.id).catch(() => {}));
-  const [mine, sim, genres, eps, reviews, premium, wants, hides, seen] = await Promise.all([
+  const [mine, sim, genres, eps, reviews, premium, wants, hides, seen, onTv] = await Promise.all([
     myRating(dev, t.id), similar(t, ctx), genreNames(t.kind, t.genre_ids, lang),
     t.kind === "tv" ? episodesFor(t.id, lang, dev) : Promise.resolve([]), reviewsFor(t.id, dev), isPremium(dev),
     idSet("want", dev), idSet("hidden", dev), t.kind === "movie" ? movieSeen(dev, t.id) : Promise.resolve(false),
+    tvForTitle(ctx, t.id),
   ]);
   const today = todayISO();
   const nd = daysUntil(t.next_air_date);
@@ -135,7 +138,7 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
       </div>
 
       <div className={`tile ${t.kind === "movie" && !trailer ? "w4" : "w2"}`}>
-        <span className="lbl"><span>{d.title.whereToWatch}</span><span>{ALL_LOCALES[lang].regionName}</span></span>
+        <span className="lbl"><span>{d.title.whereToWatch}</span><span>{regionName(region, lang)}</span></span>
         {providers.length ? providers.map((p) => {
           const st = platformStyle(p.name);
           return (
@@ -147,7 +150,18 @@ export default async function TitlePage({ t, lang, slug }: { t: TitleFull; lang:
               <small>{p.type === "flatrate" ? d.title.flatrate : p.type === "free" ? d.title.free : d.title.ads} →</small>
             </a>
           );
-        }) : <p className="muted">{fmt(d.title.notAvailable, { region: ALL_LOCALES[lang].regionName })}</p>}
+        }) : <p className="muted">{fmt(d.title.notAvailable, { region: regionName(region, lang) })}</p>}
+        {onTv.length > 0 && (
+          <div className="tvon">
+            <span className="lbl"><span>{d.tvguide.onTv}</span></span>
+            {onTv.map((a) => (
+              <div key={+a.starts_at}>
+                <b>{a.channel}{a.season && a.episode ? ` · ${epCode(a.season, a.episode)}` : ""}</b>
+                <span className="mono">{a.starts_at.toLocaleString(ALL_LOCALES[lang].intl, { weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", timeZone: regionTz(region) })}</span>
+              </div>
+            ))}
+          </div>
+        )}
         <small className="muted">{d.title.availabilityNote}</small>
       </div>
 

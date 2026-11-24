@@ -14,6 +14,8 @@ import Poster, { Fallback, Thumb, followHint } from "@/components/Poster";
 import FollowButton from "@/components/FollowButton";
 import AdSlot from "@/components/AdSlot";
 import { Bell } from "@/components/icons";
+import { tvBestToday, tvHasData, tvTime } from "@/lib/tvguide";
+import { ALL_LOCALES } from "@/lib/locales";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +39,10 @@ export default async function Home({ params }: { params: LangParams }) {
     providerList(ctx.region, 3),
   ]);
   const promo = premium ? null : await activePromo(lang);
+  // Najlepšie filmy v TV dnes (ak pre krajinu máme TV program); bez filmov ukážeme aj seriály.
+  let tvKind: "movie" | "all" = "movie";
+  let tv = (await tvHasData(ctx.region)) ? await tvBestToday(ctx, "movie", 5) : [];
+  if (tv.length < 3 && (await tvHasData(ctx.region))) { tv = await tvBestToday(ctx, "all", 5); tvKind = "all"; }
 
   if (!up.length && !topTv.length && !topMovies.length) {
     return (
@@ -110,6 +116,22 @@ export default async function Home({ params }: { params: LangParams }) {
       </Link>
 
       <PlatformStrip lang={lang} provs={provs} />
+
+      {tv.length > 0 && (
+        <div className="tile w4 tvg">
+          <div className="cathead"><h2>{tvKind === "movie" ? d.tvguide.bestMoviesToday : d.tvguide.bestToday}</h2><Link href={h("/tv-program")} className="btn soft">{d.tvguide.full}</Link></div>
+          <ol className="tvlist">
+            {tv.map((r) => (
+              <li key={r.airing_id} className="tvrow">
+                <span className="tvtime mono">{tvTime(r.starts_at, ctx.region, ALL_LOCALES[lang].intl)}</span>
+                <Thumb s={r} />
+                <Link href={titleHref(lang, r)} className="tvinfo"><b>{r.name}</b><small>{[r.channel, r.year].filter(Boolean).join(" · ")}</small></Link>
+                <span className="tvscore mono" style={{ color: tone(r.score) }}>{r.score}%</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {promo && <PromoTile p={promo} label={d.promo.label} />}
 

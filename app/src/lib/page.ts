@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { dict } from "./i18n";
-import { href, isLang, regionOf, type Lang } from "./locales";
+import { href, isLang, type Lang } from "./locales";
+import { userRegion } from "./prefs";
 import type { Ctx } from "./queries";
 import type { Kind } from "./tmdb";
 
@@ -10,7 +11,7 @@ export type LangParams = Promise<{ lang: string }>;
 export async function page(params: Promise<{ lang: string }>) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
-  const ctx: Ctx = { lang, region: regionOf(lang) };
+  const ctx: Ctx = { lang, region: await userRegion(lang) };
   return { lang, d: dict(lang), ctx, h: (p: string) => href(lang, p) };
 }
 

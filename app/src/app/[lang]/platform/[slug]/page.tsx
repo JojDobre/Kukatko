@@ -8,7 +8,7 @@ import { fmt } from "@/lib/i18n";
 import { platformStyle } from "@/lib/platforms";
 import { page, titleHref } from "@/lib/page";
 import { alternates } from "@/lib/seo";
-import { ALL_LOCALES } from "@/lib/locales";
+import { regionName } from "@/lib/locales";
 import Poster, { Thumb } from "@/components/Poster";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +50,7 @@ export default async function PlatformPage({ params }: P) {
         {p.logo_path && <img src={img(p.logo_path, "w92")!} alt="" className="plogo" />}
         <div>
           <h1>{p.name}</h1>
-          <p style={{ opacity: .85 }}>{p.count} {d.platform.inCatalog} · {ALL_LOCALES[lang].regionName}</p>
+          <p style={{ opacity: .85 }}>{p.count} {d.platform.inCatalog} · {regionName(ctx.region, lang)}</p>
         </div>
       </section>
       {week.length > 0 && (

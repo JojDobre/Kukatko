@@ -5,6 +5,7 @@ import { cleanup, fullSync, hourlySync, migrate, syncFollowedSeasons, syncRating
 import { syncTitle } from "../src/lib/sync";
 import { sendNotifications } from "./notify";
 import { seedDemo } from "./demo";
+import { importTv } from "./tv";
 
 const [cmd, a1, a2] = process.argv.slice(2);
 
@@ -27,10 +28,11 @@ async function main() {
     case "seasons": await syncFollowedSeasons(); break;
     case "ratings": await syncRatings(); break;
     case "notify": await sendNotifications(); break;
+    case "tv": await migrate(); console.log(await importTv()); break;
     case "cleanup": await cleanup(); break;
     case "seed-demo": await migrate(); await seedDemo(); break;
     default:
-      console.log("Použitie: tsx worker/cli.ts <migrate|sync [tv|movie tmdbId]|hourly|seasons|ratings|notify|cleanup|seed-demo|vapid>");
+      console.log("Použitie: tsx worker/cli.ts <migrate|sync [tv|movie tmdbId]|hourly|seasons|ratings|notify|tv|cleanup|seed-demo|vapid>");
       process.exitCode = 1;
   }
   await sql.end();

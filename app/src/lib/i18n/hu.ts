@@ -79,7 +79,9 @@ const hu: Dict = {
     setup: "Értesítések beállítása", waitingSeason: "Új évadra vár", allHaveNext: "Minden követett sorozatnak van bejelentett következő epizódja.",
     mightLike: "Ez is tetszhet", startWith: "Kezdésnek próbáld ki", movies: "Követett filmek", notStreaming: "még nem streamelhető",
   },
+  tvguide: { nav: "TV-műsor", title: "TV-műsor", metaTitle: "Mai TV-műsor: filmek és sorozatok értékeléssel", intro: "Filmek és sorozatok a tévében értékeléssel. Az időpontok ehhez az országhoz: {region}.", bestToday: "Ma a legjobb a tévében", bestMoviesToday: "Ma a legjobb filmek a tévében", full: "Teljes TV-műsor", byScore: "Értékelés szerint", byTime: "Idő szerint", now: "Most megy", empty: "Erre a napra még nincs TV-műsorunk ehhez az országhoz: {region}.", onTv: "A tévében", channels: "Csatornák", allChannels: "Minden csatorna" },
   profile: {
+    regionSection: "Ország és szolgáltatók", region: "Ország", regionHint: "A szolgáltatók, a filmkínálatuk és a TV-műsor országonként eltér.", myPlatforms: "Az én szolgáltatóim", myPlatformsHint: "Válaszd ki, mire fizetsz elő. A katalógus, a kezdőlap és az értesítések ehhez igazodnak.", platformsNone: "Semmi sincs kiválasztva = minden szolgáltatót mutatunk.", noProviders: "Ehhez az országhoz még nincsenek szolgáltatók. A következő szinkronizálás után megjelennek.",
     metaTitle: "Profil és értesítések", notifications: "Értesítések", pushDevice: "Értesítések ezen az eszközön",
     pushHint: "Push üzenet, ha történik valami, amit követsz", pushUnsupported: "Ez a böngésző nem támogatja az értesítéseket. iPhone-on előbb add hozzá az oldalt a kezdőképernyőhöz.",
     pushBlocked: "Az értesítések le vannak tiltva a böngésző beállításaiban.",

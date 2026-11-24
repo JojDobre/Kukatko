@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { sql } from "./db";
-import { DEFAULT_LANG, isLang, regionOf } from "./locales";
+import { DEFAULT_LANG, isLang, isRegion, regionOf } from "./locales";
 
 export const DEVICE_COOKIE = "kid";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,7 +20,9 @@ export async function ensureDevice(): Promise<string> {
   if (!id || !UUID.test(id)) throw new Response("Chýba cookie zariadenia", { status: 400 });
   const l = jar.get("lang")?.value;
   const lang = isLang(l) ? l : DEFAULT_LANG;
-  await sql`INSERT INTO devices (id, lang, region) VALUES (${id}, ${lang}, ${regionOf(lang)})
+  const r = jar.get("region")?.value;
+  const region = isRegion(r) ? r : regionOf(lang);
+  await sql`INSERT INTO devices (id, lang, region) VALUES (${id}, ${lang}, ${region})
     ON CONFLICT (id) DO UPDATE SET last_seen = now(), lang = EXCLUDED.lang, region = EXCLUDED.region`;
   return id;
 }

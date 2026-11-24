@@ -79,7 +79,9 @@ const cs: Dict = {
     setup: "Nastavit upozornění", waitingSeason: "Čeká se na novou řadu", allHaveNext: "Všechny sledované seriály mají ohlášený další díl.",
     mightLike: "Mohlo by se ti líbit", startWith: "Pro začátek zkus", movies: "Sledované filmy", notStreaming: "zatím není na streamingu",
   },
+  tvguide: { nav: "TV program", title: "TV program", metaTitle: "TV program dnes: filmy a seriály v televizi s hodnocením", intro: "Filmy a seriály v televizi s hodnocením. Časy jsou pro zemi {region}.", bestToday: "Nejlepší v TV dnes", bestMoviesToday: "Nejlepší filmy v TV dnes", full: "Celý TV program", byScore: "Podle hodnocení", byTime: "Podle času", now: "Právě běží", empty: "Na tento den zatím nemáme TV program pro zemi {region}.", onTv: "V televizi", channels: "Stanice", allChannels: "Všechny stanice" },
   profile: {
+    regionSection: "Země a platformy", region: "Země", regionHint: "Platformy, jejich nabídka filmů a TV program se liší podle země.", myPlatforms: "Moje platformy", myPlatformsHint: "Vyber, co máš předplacené. Katalog, úvodní stránka i upozornění se tomu přizpůsobí.", platformsNone: "Nic nevybráno = ukazujeme všechny platformy.", noProviders: "Pro tuto zemi zatím nemáme platformy. Doplní se po nejbližší synchronizaci.",
     metaTitle: "Profil a upozornění", notifications: "Upozornění", pushDevice: "Upozornění v tomto zařízení",
     pushHint: "Push zpráva, když se stane něco, co sleduješ", pushUnsupported: "Tento prohlížeč upozornění nepodporuje. Na iPhonu si nejdřív přidej stránku na plochu.",
     pushBlocked: "Upozornění máš zablokovaná v nastavení prohlížeče.",

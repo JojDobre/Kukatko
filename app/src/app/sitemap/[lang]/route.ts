@@ -23,7 +23,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ lang: stri
   const u = (path: string, mod?: Date, freq = "daily") =>
     `<url><loc>${esc(SITE_URL + href(lang, path))}</loc>${mod ? `<lastmod>${mod.toISOString().slice(0, 10)}</lastmod>` : ""}<changefreq>${freq}</changefreq></url>`;
   const urls = [
-    u("/"), u("/catalog"), u("/catalog?kind=movie"), u("/charts"), u("/calendar"), u("/pick", undefined, "weekly"),
+    u("/"), u("/catalog"), u("/catalog?kind=movie"), u("/charts"), u("/calendar"), u("/tv-program", undefined, "daily"), u("/pick", undefined, "weekly"),
     u("/platforms"), ...provs.map((p) => u(`/platform/${p.slug}`)), u("/about", undefined, "monthly"),
     ...charts.map((k) => u(`/charts/${k}`)),
     ...titles.map((t) => u(`/${t.kind}/${t.tmdb_id}-${t.slug}`, t.synced_at)),

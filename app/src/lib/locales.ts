@@ -21,7 +21,23 @@ function parse(v: string | undefined): Lang[] {
 /** Zapnuté jazyky. Prvý je predvolený (bez predpony v adrese). */
 export const LANGS: Lang[] = parse(process.env.LOCALES);
 export const DEFAULT_LANG: Lang = LANGS[0];
-export const REGIONS = [...new Set(LANGS.map((l) => ALL_LOCALES[l].region))];
+/** Ďalšie krajiny bez vlastného jazyka (napr. EXTRA_REGIONS="AT,CH,US"): platformy a TV program. */
+const EXTRA = (process.env.EXTRA_REGIONS ?? "").split(",").map((s) => s.trim().toUpperCase()).filter((s) => /^[A-Z]{2}$/.test(s));
+export const REGIONS: string[] = [...new Set([...LANGS.map((l) => ALL_LOCALES[l].region as string), ...EXTRA])];
+export const isRegion = (s: unknown): s is string => typeof s === "string" && REGIONS.includes(s);
+
+/** Názov krajiny v jazyku stránky (Slovensko, Česko, Rakúsko…). */
+export function regionName(code: string, lang: Lang) {
+  try { return new Intl.DisplayNames([ALL_LOCALES[lang].intl], { type: "region" }).of(code) ?? code; } catch { return code; }
+}
+
+/** Časové pásmo krajiny (TV program). */
+const TZ: Record<string, string> = {
+  SK: "Europe/Bratislava", CZ: "Europe/Prague", GB: "Europe/London", PL: "Europe/Warsaw", HU: "Europe/Budapest", DE: "Europe/Berlin",
+  AT: "Europe/Vienna", CH: "Europe/Zurich", IE: "Europe/Dublin", FR: "Europe/Paris", IT: "Europe/Rome", ES: "Europe/Madrid", NL: "Europe/Amsterdam",
+  US: "America/New_York", CA: "America/Toronto",
+};
+export const regionTz = (code: string) => TZ[code] ?? "Europe/Bratislava";
 
 export const isLang = (s: unknown): s is Lang => typeof s === "string" && (LANGS as string[]).includes(s);
 export const loc = (l: Lang) => ALL_LOCALES[l];

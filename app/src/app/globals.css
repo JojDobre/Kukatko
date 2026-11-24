@@ -475,3 +475,33 @@ details>summary::-webkit-details-marker{display:none}
 }
 @media (max-width:380px){ .bento{grid-template-columns:1fr} .w2,.w3,.w4{grid-column:span 1} }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* profil: krajina a platformy */
+.sel{font:inherit;font-weight:600;font-size:14px;color:var(--fg);background:var(--tile2);border:0;border-radius:12px;padding:9px 12px;max-width:52%}
+.regplat .pblock{display:flex;flex-direction:column;gap:10px;padding:12px 0 4px;border-top:1px solid var(--line);font-weight:500}
+.regplat .pblock>small{color:var(--muted);font-size:13px}
+.regplat .pgrid{display:flex;flex-wrap:wrap;gap:8px}
+.regplat .pchip{background:var(--tile2);padding-left:10px;cursor:pointer}
+.regplat .pchip .pdot{margin:0}
+.regplat .pchip .cnt{color:var(--muted);font:500 11.5px var(--font-mono),monospace}
+.regplat[aria-busy="true"]{opacity:.6}
+
+/* TV program */
+.tvg{gap:14px}
+.tvdays{align-self:flex-start}
+.tvlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tvrow{display:grid;grid-template-columns:48px 40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.tvrow:first-child{border-top:0}
+.tvrow .mini{width:40px;height:60px;border-radius:8px}
+.tvtime{font-weight:700;font-size:14px}
+.tvinfo{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tvinfo b{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tvinfo:hover b{color:var(--accent)}
+.tvinfo small{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tvscore{font-weight:700;font-size:13.5px}
+.tvrow.past{opacity:.45}
+.tvrow.live .tvtime{color:var(--accent)}
+.tvlive{display:inline-block;margin-right:6px;padding:1px 7px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:700}
+.tvon{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line)}
+.tvon div{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.tvon .mono{color:var(--muted);font-size:13px}
