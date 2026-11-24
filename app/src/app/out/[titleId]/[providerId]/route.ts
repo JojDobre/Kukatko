@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/site";
 export async function GET(req: Request, { params }: { params: Promise<{ titleId: string; providerId: string }> }) {
   const { titleId, providerId } = await params;
   const tid = Number(titleId), pid = Number(providerId);
-  const region = (new URL(req.url).searchParams.get("r") ?? "").toUpperCase().slice(0, 2);
+  const region = (new URL(req.url).searchParams.get("r") ?? "").toUpperCase().slice(0, 6);
   const [t] = await sql<{ watch_links: Record<string, string>; providers: Record<string, { id: number; name: string }[]> }[]>`
     SELECT watch_links, providers FROM titles WHERE id = ${tid}`.catch(() => []);
   const p = t?.providers?.[region]?.find((x) => x.id === pid);

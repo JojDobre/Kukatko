@@ -12,7 +12,7 @@ import IcalBox from "@/components/IcalBox";
 import RegionPlatforms from "@/components/RegionPlatforms";
 import { providerList } from "@/lib/queries";
 import { selectedPlats } from "@/lib/prefs";
-import { REGIONS, regionName } from "@/lib/locales";
+import { GLOBAL, REGIONS, regionName } from "@/lib/locales";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,8 @@ export default async function Profile({ params, searchParams }: { params: LangPa
   const active = !!info.premiumUntil && info.premiumUntil > new Date();
   // V Android appke nákup neponúkame (Google Play vyžaduje vlastné platby). Zakúpené prémium však platí.
   const [providers, selected] = await Promise.all([providerList(ctx.region, 1), selectedPlats(ctx.region)]);
-  const regions = REGIONS.map((code) => ({ code, name: regionName(code, lang) })).sort((a, b) => a.name.localeCompare(b.name, lang));
+  const regions = REGIONS.map((code) => ({ code, name: regionName(code, lang) }))
+    .sort((a, b) => Number(b.code === GLOBAL) - Number(a.code === GLOBAL) || a.name.localeCompare(b.name, lang));
   const showPremium = premiumEnabled && (!(await inApp()) || active);
   return (
     <div className="bento">

@@ -53,20 +53,18 @@ export async function upsertTitle(r: TitleRow): Promise<number> {
  */
 async function recordAvailability(titleId: number, r: TitleRow) {
   const rows = Object.entries(r.providers).flatMap(([region, list]) => list.map((p) => ({ region, p })));
-  for (const { p } of rows) {
-    await sql`INSERT INTO providers (id, name, logo_path, slug) VALUES (${p.id}, ${p.name}, ${p.logo_path}, ${slugify(p.name)})
-      ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, logo_path = COALESCE(EXCLUDED.logo_path, providers.logo_path)`;
-  }
   if (!rows.length) return;
+  const provs = [...new Map(rows.map(({ p }) => [p.id, p])).values()];
+  await sql`INSERT INTO providers ${sql(provs.map((p) => ({ id: p.id, name: p.name, logo_path: p.logo_path, slug: slugify(p.name) })), "id", "name", "logo_path", "slug")}
+    ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, logo_path = COALESCE(EXCLUDED.logo_path, providers.logo_path)`;
   const [{ known }] = await sql<{ known: boolean }[]>`SELECT EXISTS (SELECT 1 FROM availability WHERE title_id = ${titleId}) AS known`;
-  for (const { region, p } of rows) {
-    await sql`INSERT INTO availability (title_id, region, provider_id, initial) VALUES (${titleId}, ${region}, ${p.id}, ${!known})
-      ON CONFLICT (title_id, region, provider_id) DO UPDATE SET
-        last_seen = now(),
-        first_seen = CASE WHEN availability.removed_at IS NOT NULL THEN now() ELSE availability.first_seen END,
-        initial = CASE WHEN availability.removed_at IS NOT NULL THEN false ELSE availability.initial END,
-        removed_at = NULL`;
-  }
+  // Jedným príkazom (pri 30 krajinách by to inak bolo stovky dopytov na titul).
+  await sql`INSERT INTO availability ${sql(rows.map(({ region, p }) => ({ title_id: titleId, region, provider_id: p.id, initial: !known })), "title_id", "region", "provider_id", "initial")}
+    ON CONFLICT (title_id, region, provider_id) DO UPDATE SET
+      last_seen = now(),
+      first_seen = CASE WHEN availability.removed_at IS NOT NULL THEN now() ELSE availability.first_seen END,
+      initial = CASE WHEN availability.removed_at IS NOT NULL THEN false ELSE availability.initial END,
+      removed_at = NULL`;
 }
 
 /**

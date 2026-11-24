@@ -1,5 +1,5 @@
 import { slugify } from "./format";
-import { ALL_LOCALES, LANGS, REGIONS, type Lang } from "./locales";
+import { ALL_LOCALES, COUNTRIES, GLOBAL, LANGS, type Lang } from "./locales";
 
 const BASE = "https://api.themoviedb.org/3";
 export type Kind = "tv" | "movie";
@@ -119,7 +119,7 @@ export function textsFor(d: any, kind: Kind, lang: Lang): Texts {
 }
 
 /** Prevedie odpoveď TMDB na riadok tabuľky `titles`. Čistá funkcia, dá sa testovať. */
-export function mapTitle(kind: Kind, d: any, langs: Lang[] = LANGS, regions: string[] = REGIONS): TitleRow {
+export function mapTitle(kind: Kind, d: any, langs: Lang[] = LANGS, regions: string[] = COUNTRIES): TitleRow {
   const i18n: TitleRow["i18n"] = {};
   for (const l of langs) i18n[l] = textsFor(d, kind, l);
 
@@ -139,6 +139,16 @@ export function mapTitle(kind: Kind, d: any, langs: Lang[] = LANGS, regions: str
     }
     if (list.length) providers[region] = list;
     if (wp.link) watch_links[region] = wp.link;
+  }
+  // „Celý svet“: platformy zo všetkých krajín, najčastejšie prvé (predplatné pred bezplatnými).
+  const all = Object.values(providers).flat();
+  if (all.length) {
+    const count = new Map<number, number>();
+    for (const p of all) count.set(p.id, (count.get(p.id) ?? 0) + 1);
+    const rank: Record<string, number> = { flatrate: 0, free: 1, ads: 2 };
+    const best = new Map<number, Provider>();
+    for (const p of all) { const b = best.get(p.id); if (!b || rank[p.type] < rank[b.type]) best.set(p.id, p); }
+    providers[GLOBAL] = [...best.values()].sort((a, b) => rank[a.type] - rank[b.type] || count.get(b.id)! - count.get(a.id)!).slice(0, 25);
   }
 
   const vids: any[] = (d.videos?.results ?? []).filter((v: any) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"));

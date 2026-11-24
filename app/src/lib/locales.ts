@@ -21,13 +21,29 @@ function parse(v: string | undefined): Lang[] {
 /** Zapnuté jazyky. Prvý je predvolený (bez predpony v adrese). */
 export const LANGS: Lang[] = parse(process.env.LOCALES);
 export const DEFAULT_LANG: Lang = LANGS[0];
-/** Ďalšie krajiny bez vlastného jazyka (napr. EXTRA_REGIONS="AT,CH,US"): platformy a TV program. */
-const EXTRA = (process.env.EXTRA_REGIONS ?? "").split(",").map((s) => s.trim().toUpperCase()).filter((s) => /^[A-Z]{2}$/.test(s));
-export const REGIONS: string[] = [...new Set([...LANGS.map((l) => ALL_LOCALES[l].region as string), ...EXTRA])];
+/** Krajiny EÚ (TMDB/JustWatch pre ne má dostupnosť na platformách). */
+export const EU = ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"];
+/** „Celý svet“: katalóg bez obmedzenia na krajinu, platformy zo všetkých krajín spolu. */
+export const GLOBAL = "GLOBAL";
+
+/**
+ * Ďalšie krajiny bez vlastného jazyka. Predvolene USA a celá EÚ.
+ * EXTRA_REGIONS="AT,CH" ich nahradí vlastným zoznamom, EXTRA_REGIONS=none vypne.
+ */
+const extraEnv = process.env.EXTRA_REGIONS?.trim();
+const EXTRA = extraEnv === "none" ? [] : (extraEnv ? extraEnv.split(",") : ["US", ...EU]).map((s) => s.trim().toUpperCase()).filter((s) => /^[A-Z]{2}$/.test(s));
+/** Krajiny jazykov (celá nočná synchronizácia) – ostatné sa sťahujú v menšom rozsahu. */
+export const MAIN_REGIONS: string[] = [...new Set(LANGS.map((l) => ALL_LOCALES[l].region as string))];
+/** Skutočné krajiny (pre TMDB). */
+export const COUNTRIES: string[] = [...new Set([...MAIN_REGIONS, ...EXTRA])];
+/** Všetko, čo si užívateľ môže zvoliť, vrátane „Celý svet“. */
+export const REGIONS: string[] = [...COUNTRIES, GLOBAL];
 export const isRegion = (s: unknown): s is string => typeof s === "string" && REGIONS.includes(s);
 
+const GLOBAL_NAME: Record<Lang, string> = { sk: "Celý svet", cs: "Celý svět", en: "Worldwide", pl: "Cały świat", hu: "Egész világ", de: "Weltweit" };
 /** Názov krajiny v jazyku stránky (Slovensko, Česko, Rakúsko…). */
 export function regionName(code: string, lang: Lang) {
+  if (code === GLOBAL) return GLOBAL_NAME[lang];
   try { return new Intl.DisplayNames([ALL_LOCALES[lang].intl], { type: "region" }).of(code) ?? code; } catch { return code; }
 }
 

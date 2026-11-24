@@ -52,8 +52,8 @@ test("mapTitle: seriál, preklady a platformy pre viac krajín", () => {
   assert.deepEqual(r.genre_ids, [18, 9648]);
   assert.deepEqual(r.providers.SK.map((p) => p.id), [350]); // bez duplicít a bez „kúpiť“
   assert.ok(r.providers.CZ && !r.providers.GB);
-  assert.deepEqual(r.provider_keys.sort(), ["CZ:350", "SK:350"]);
-  assert.deepEqual(r.regions.sort(), ["CZ", "SK"]);
+  assert.deepEqual(r.provider_keys.sort(), ["CZ:350", "GLOBAL:350", "SK:350"]);
+  assert.deepEqual(r.regions.sort(), ["CZ", "GLOBAL", "SK"]);
   assert.equal(r.trailers.cs, "csTrailer");
   assert.equal(r.trailers.sk, "trail1");                   // bez sk traileru → anglický oficiálny
   assert.equal(r.cast[0].name, "Adam Scott");

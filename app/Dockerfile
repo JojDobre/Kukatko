@@ -24,6 +24,8 @@ CMD ["node", "server.js"]
 FROM node:22-alpine AS worker
 WORKDIR /app
 ENV NODE_ENV=production
+# curl: záloha na sťahovanie TV programu, keby Node odmietol staršie TLS zdroja
+RUN apk add --no-cache curl
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY tsconfig.json ./

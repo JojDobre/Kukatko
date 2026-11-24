@@ -4,7 +4,7 @@ import { sql } from "../src/lib/db";
 import { discoverPage, type Kind } from "../src/lib/tmdb";
 import { omdbByImdbId } from "../src/lib/omdb";
 import { todayISO } from "../src/lib/format";
-import { REGIONS } from "../src/lib/locales";
+import { COUNTRIES, MAIN_REGIONS } from "../src/lib/locales";
 import { log, markRemoved, pool, syncAllSeasons, syncGenres, syncTitle } from "../src/lib/sync";
 
 export async function migrate() {
@@ -44,8 +44,10 @@ export async function fullSync() {
   const add = (kind: Kind, id: number) => want.set(`${kind}:${id}`, { kind, id });
 
   await syncGenres().catch((e) => log("Žánre:", e.message));
-  for (const region of REGIONS) {
-    for (const [kind, max] of [["tv", pages], ["movie", moviePages]] as const) {
+  const extraPages = Number(process.env.SYNC_PAGES_EXTRA ?? 3);   // ostatné krajiny (USA, EÚ) v menšom rozsahu
+  for (const region of COUNTRIES) {
+    const main = MAIN_REGIONS.includes(region);
+    for (const [kind, max] of [["tv", main ? pages : extraPages], ["movie", main ? moviePages : extraPages]] as const) {
       for (let p = 1; p <= max; p++) {
         const res = await discoverPage(kind, region, p);
         res.results.forEach((r) => add(kind, r.id));
@@ -53,7 +55,7 @@ export async function fullSync() {
       }
     }
   }
-  log(`TMDB discover (${REGIONS.join(", ")}): ${want.size} titulov`);
+  log(`TMDB discover (${COUNTRIES.length} krajín): ${want.size} titulov`);
 
   const extra = await sql<{ kind: Kind; tmdb_id: number }[]>`
     SELECT kind, tmdb_id FROM titles

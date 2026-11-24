@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { Geist_Mono, Onest } from "next/font/google";
 import "../globals.css";
 import { TabBar, TopNav } from "@/components/Nav";
+import { userRegion } from "@/lib/prefs";
+import { tvHasData } from "@/lib/tvguide";
 import Toaster from "@/components/Toaster";
 import SWRegister from "@/components/SWRegister";
 import PrivacyLink from "@/components/PrivacyLink";
@@ -64,7 +66,8 @@ export default async function LangLayout({ children, params }: P & { children: R
   if (!isLang(lang)) notFound();
   const d = dict(lang);
   const dev = await deviceId();
-  const [badge, premium] = await Promise.all([badgeCount(dev), isPremium(dev)]);
+  const region = await userRegion(lang);
+  const [badge, premium, tv] = await Promise.all([badgeCount(dev), isPremium(dev), tvHasData(region).catch(() => false)]);
   const adsense = !premium ? process.env.ADSENSE_CLIENT : undefined;
   const umami = process.env.UMAMI_SCRIPT_URL && process.env.UMAMI_WEBSITE_ID;
   // Do prehliadača posielame len texty, ktoré používajú klientské komponenty.
@@ -84,7 +87,7 @@ export default async function LangLayout({ children, params }: P & { children: R
           <div className="app">
             <header className="head">
               <Link href={href(lang, "/")} className="logo"><i aria-hidden="true" />{SITE}</Link>
-              <TopNav badge={badge} />
+              <TopNav badge={badge} tv={tv} />
             </header>
             {children}
             <footer className="foot">

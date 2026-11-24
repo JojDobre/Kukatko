@@ -5,13 +5,13 @@ import { Bell, Calendar, Chart, Grid, List, Search, Tv, User } from "./icons";
 import { useI18n } from "./I18n";
 import LangSwitch from "./LangSwitch";
 
-function useItems() {
+function useItems(tv = false) {
   const { d, href } = useI18n();
   return [
     { key: "home", href: href("/"), label: d.nav.home, icon: <Grid /> },
     { key: "catalog", href: href("/catalog"), label: d.nav.catalog, icon: <List /> },
     { key: "charts", href: href("/charts"), label: d.nav.charts, icon: <Chart /> },
-    { key: "tvguide", href: href("/tv-program"), label: d.tvguide.nav, icon: <Tv />, desktopOnly: true },
+    ...(tv ? [{ key: "tvguide", href: href("/tv-program"), label: d.tvguide.nav, icon: <Tv />, desktopOnly: true }] : []),
     { key: "calendar", href: href("/calendar"), label: d.more.calendar, icon: <Calendar />, desktopOnly: true },
     { key: "watchlist", href: href("/watchlist"), label: d.nav.watchlist, icon: <Bell /> },
     { key: "profile", href: href("/profile"), label: d.nav.profile, icon: <User /> },
@@ -20,9 +20,9 @@ function useItems() {
 
 const isActive = (path: string, h: string, home: string) => (h === home ? path === home : path.startsWith(h));
 
-export function TopNav({ badge }: { badge: number }) {
+export function TopNav({ badge, tv }: { badge: number; tv: boolean }) {
   const path = usePathname();
-  const items = useItems();
+  const items = useItems(tv);
   const { d, href, plural } = useI18n();
   return (
     <>

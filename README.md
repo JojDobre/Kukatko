@@ -283,32 +283,30 @@ Testy: `npm test`. Kontrola typov: `npm run typecheck`.
 
 V **Profile** si každý vyberie krajinu a platformy, ktoré má predplatené. Krajina je nezávislá od jazyka (napr. slovenčina, ale ponuka pre Česko). Podľa krajiny sa ukazuje, čo je na ktorej platforme, a aj TV program. Výber platforiem platí pre katalóg, domovskú stránku aj upozornenia.
 
-Predvolene sú na výber krajiny zapnutých jazykov (SK, CZ, GB, PL, HU, DE). Ďalšie pridáš v `.env`, napríklad `EXTRA_REGIONS=AT,CH`, a potom reštartuješ `web` aj `worker`. Platformy pre novú krajinu sa objavia po najbližšej nočnej synchronizácii. Ak nechceš čakať, spusti ju ručne (pozri „Bežná údržba“).
+Na výber je **Celý svet**, krajiny jazykov (SK, CZ, GB, PL, HU, DE), **USA** a **všetky krajiny EÚ**. „Celý svet“ ukazuje celý katalóg bez ohľadu na krajinu a pri titule platformy zo všetkých krajín spolu. Pre krajiny jazykov sa každú noc sťahuje `SYNC_PAGES` strán populárnych titulov, pre ostatné `SYNC_PAGES_EXTRA` (predvolene 3), lebo populárne tituly sa prekrývajú. Zoznam zmeníš cez `EXTRA_REGIONS` (napr. `AT,CH,US`, alebo `none`). Platformy pre nové krajiny sa objavia po najbližšej nočnej synchronizácii.
 
 ## TV program
 
-Sekcia **TV program** (`/tv-program`), dlaždica „Najlepšie filmy v TV dnes“ na domovskej stránke a riadok „V televízii“ pri titule. Robot každých 6 hodín načíta program vo formáte **XMLTV**. Uloží len relácie, ktoré vyzerajú ako film alebo seriál, a spáruje ich s titulmi podľa názvu a roku. Čo nenájde v katalógu, vyhľadá v TMDB (`TV_TMDB_LOOKUPS`) a titul pridá aj s hodnotením.
+Sekcia **TV program** (`/tv-program`), dlaždica „Najlepšie filmy v TV dnes“ na domovskej stránke a riadok „V televízii“ pri titule. Je len pre **Slovensko a Česko**. V iných krajinách sa sekcia ani odkaz neukazujú.
 
-**Odkiaľ vziať XMLTV.** Pre Slovensko a Česko neexistuje oficiálne bezplatné API s TV programom. Možnosti:
+- **Zdroj:** verejný TV program z tvprogram.cz (mobilná verzia m.tv.sms.cz). Rovnaký zdroj používa open-source projekt iptv-org/epg. Netreba nič nastavovať ani inštalovať.
+- **Stanice:** asi 45 staníc, napríklad Jednotka, Dvojka, Markíza, Doma, Dajto, JOJ, JOJ Plus, WAU, JOJ Cinema, ČT1, ČT2, Nova, Nova Cinema, Prima, Prima Max, CS Film, Film+, HBO, Cinemax, AXN či Filmbox. Zoznam je v `app/worker/tvsms.ts`.
+- **Kedy sa sťahuje:** robot každých 6 hodín obnoví dnešok a zajtrajšok. Raz denne ráno stiahne 5 dní dopredu. Medzi stránkami robí pauzu (`TV_SMS_PAUSE_MS`, predvolene 1,2 s), aby zdroj nezaťažoval.
+- **Párovanie:** relácie spáruje s titulmi podľa názvu a roku. Čo nenájde v katalógu, vyhľadá v TMDB (`TV_TMDB_LOOKUPS` na jeden beh) a titul pridá aj s hodnotením. Správy, šport a relácie sa vynechajú.
+- **Vlastný zdroj:** namiesto vstavaného môžeš zadať súbor XMLTV cez `TV_XMLTV_SK` a `TV_XMLTV_CZ`. Vstavaný zdroj vypneš cez `TV_BUILTIN=off`.
 
-1. **Vlastný grabber** (zadarmo): open-source projekt [iptv-org/epg](https://github.com/iptv-org/epg) vie vyrobiť XMLTV zo stránok s programom. Pre SK/CZ má napríklad zdroje `m.tv.sms.cz`, `mujtvprogram.cz` a `webtv.sk`. Spúšťa sa na VPS raz denne a súbor potom zadáš ako cestu, napr. `TV_XMLTV_SK=/data/epg/sk.xml`. Pozor: tieto zdroje sťahujú dáta z cudzích webov. Pred verejným spustením si over ich podmienky použitia. TV program môže byť chránený ako databáza.
-2. **Licencovaný zdroj**: poskytovatelia EPG alebo samotné stanice (napr. tlačové oddelenia ČT, STVR, Markízy či JOJ) dávajú program médiám a partnerom. Pre ostré verejné spustenie je to najčistejšia cesta.
-3. **Hotový XMLTV súbor na webe**: stačí zadať jeho adresu (aj `.xml.gz`).
-
-Súbor na disku musí byť viditeľný pre kontajner `worker`. Pridaj mu do `docker-compose.yml` napríklad `volumes: ["./epg:/data/epg:ro"]`.
-
-Ručné spustenie a kontrola:
+Ručné spustenie:
 
 ```bash
 docker compose exec worker node node_modules/tsx/dist/cli.mjs worker/cli.ts tv
 ```
 
-Výsledok je aj v databáze pod kľúčom `last_tv_import` v tabuľke `kv`. Pre monitoring môžeš pridať kontrolu na healthchecks.io a jej adresu vložiť do `HC_TV_URL`.
+Výsledok posledného behu je v tabuľke `kv` pod kľúčom `last_tv_import`. Monitoring: adresu kontroly z healthchecks.io vlož do `HC_TV_URL`.
 
 ## Podmienky dát
 
 - **TMDB:** na webe musí byť uvedené, že dáta sú z TMDB (je to v pätičke). Bezplatný kľúč povoľuje aj web s reklamou. Pri veľkej návštevnosti ti môžu ponúknuť komerčnú licenciu.
 - **JustWatch:** dostupnosť na platformách pochádza od JustWatch cez TMDB a treba ich uviesť (je to v pätičke aj pri tlačidlách).
 - **OMDb:** bezplatný kľúč, limit 1 000 dopytov denne. Robot ho dodržiava a hodnotenia obnovuje postupne, každý titul raz za 7 dní.
-- **TV program:** zodpovednosť za zdroj XMLTV a jeho licenciu nesie prevádzkovateľ (pozri časť „TV program“).
+- **TV program:** pochádza z verejného tvprogram.cz. Pri komerčnom využití (reklama, prémium) si over ich podmienky alebo prejdi na licencovaný zdroj XMLTV.
 - **Odchody z platforiem:** TMDB ani JustWatch zadarmo neposkytujú dátum, kedy titul z platformy odíde. Kukátko preto hlási odchod až vtedy, keď titul na platforme už nie je (po dvoch synchronizáciách, aby nechodili falošné upozornenia).
