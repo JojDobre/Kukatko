@@ -4,12 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import { platformStyle } from "@/lib/platforms";
 import { useI18n } from "./I18n";
 import { Check, Sliders, X } from "./icons";
+import { catalogQuery, type FilterState } from "@/lib/catalogUrl";
 
-export type FilterState = {
-  kind: "all" | "tv" | "movie"; sort: string; genre: string | null; year: number | null;
-  runtime: "short" | "medium" | "long" | null; score: number | null; lang: string | null;
-  all: boolean; view: "grid" | "list";
-};
+export type { FilterState };
 
 type Props = {
   state: FilterState;
@@ -34,21 +31,6 @@ export const GridIcon = () => (
 export const ListIcon = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
 );
-
-/** URL katalógu pre daný stav (zdieľané s prepínačom zobrazenia). */
-export function catalogQuery(s: FilterState) {
-  const q = new URLSearchParams();
-  if (s.kind !== "all") q.set("kind", s.kind);
-  if (s.sort !== "score") q.set("sort", s.sort);
-  if (s.genre) q.set("genre", s.genre);
-  if (s.year) q.set("year", String(s.year));
-  if (s.runtime) q.set("runtime", s.runtime);
-  if (s.score) q.set("score", String(s.score));
-  if (s.lang) q.set("lang", s.lang);
-  if (s.all) q.set("all", "1");
-  if (s.view === "list") q.set("view", "list");
-  return q.size ? `?${q}` : "";
-}
 
 /** Prepínač mriežka / zoznam vedľa nadpisu katalógu. */
 export function ViewToggle({ state }: { state: FilterState }) {

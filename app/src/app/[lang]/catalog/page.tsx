@@ -6,7 +6,8 @@ import { catalog, followedIds, genreList, isKind, isSort, languageList, PAGE_SIZ
 import { page, type LangParams } from "@/lib/page";
 import { alternates } from "@/lib/seo";
 import { metricValue, Thumb, followHint, type Metric } from "@/components/Poster";
-import Filters, { ViewToggle, catalogQuery, type FilterState } from "@/components/Filters";
+import Filters, { ViewToggle } from "@/components/Filters";
+import { catalogQuery, type FilterState } from "@/lib/catalogUrl";
 import FollowButton from "@/components/FollowButton";
 import { cookies } from "next/headers";
 import { hue, img, tone } from "@/lib/format";
