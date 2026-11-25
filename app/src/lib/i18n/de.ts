@@ -38,6 +38,7 @@ const de: Dict = {
     aria: "Benachrichtigungen: {name}", saveError: "Speichern fehlgeschlagen. Bitte erneut versuchen.", pushOn: "Benachrichtigungen aktiviert", pushFail: "Benachrichtigungen konnten nicht aktiviert werden",
   },
   catalog: {
+    grid: "Raster", list: "Liste", mine: "Meine Dienste", sortBy: "Sortieren nach", tvs: "Serien", movies: "Filme", recent: "2020+",
     title: "Katalog", metaTitle: "Katalog für Serien und Filme",
     metaDesc: "Serien und Filme bei Streamingdiensten. Sortiere nach IMDb-, TMDB- oder Rotten-Tomatoes-Bewertung oder nach der nächsten Folge.",
     sort: "Sortieren", platforms: "Dienste", genre: "Genre", selected: "{n} ausgewählt", clear: "Auswahl löschen",

@@ -37,6 +37,7 @@ const sk = {
     aria: "Upozornenia: {name}", saveError: "Nepodarilo sa uložiť. Skús to znova.", pushOn: "Upozornenia zapnuté", pushFail: "Upozornenia sa nepodarilo zapnúť",
   },
   catalog: {
+    grid: "Mriežka", list: "Zoznam", mine: "Moje platformy", sortBy: "Zoradiť podľa", tvs: "Seriály", movies: "Filmy", recent: "2020+",
     title: "Katalóg", metaTitle: "Katalóg seriálov a filmov",
     metaDesc: "Seriály a filmy dostupné na streamovacích službách. Zoraď podľa hodnotenia IMDb, TMDB, Rotten Tomatoes alebo podľa najbližšej epizódy.",
     sort: "Zoradiť", platforms: "Platformy", genre: "Žáner", selected: "{n} vybrané", clear: "Zrušiť výber",

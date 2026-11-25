@@ -38,6 +38,7 @@ const en: Dict = {
     aria: "Notifications: {name}", saveError: "Couldn't save. Please try again.", pushOn: "Notifications turned on", pushFail: "Couldn't turn on notifications",
   },
   catalog: {
+    grid: "Grid", list: "List", mine: "My services", sortBy: "Sort by", tvs: "Series", movies: "Movies", recent: "2020+",
     title: "Catalogue", metaTitle: "Series and film catalogue",
     metaDesc: "Series and films available on streaming services. Sort by IMDb, TMDB or Rotten Tomatoes rating, or by the next episode.",
     sort: "Sort", platforms: "Services", genre: "Genre", selected: "{n} selected", clear: "Clear selection",

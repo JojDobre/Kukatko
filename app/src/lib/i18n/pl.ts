@@ -38,6 +38,7 @@ const pl: Dict = {
     aria: "Powiadomienia: {name}", saveError: "Nie udało się zapisać. Spróbuj ponownie.", pushOn: "Powiadomienia włączone", pushFail: "Nie udało się włączyć powiadomień",
   },
   catalog: {
+    grid: "Siatka", list: "Lista", mine: "Moje platformy", sortBy: "Sortuj według", tvs: "Seriale", movies: "Filmy", recent: "2020+",
     title: "Katalog", metaTitle: "Katalog seriali i filmów",
     metaDesc: "Seriale i filmy dostępne w serwisach streamingowych. Sortuj według ocen IMDb, TMDB, Rotten Tomatoes lub najbliższego odcinka.",
     sort: "Sortuj", platforms: "Serwisy", genre: "Gatunek", selected: "wybrane: {n}", clear: "Wyczyść wybór",

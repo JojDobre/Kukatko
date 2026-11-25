@@ -610,3 +610,52 @@ details>summary::-webkit-details-marker{display:none}
 .pfan-btn{align-self:flex-start;padding:8px 14px;border-radius:999px;background:#fff;color:var(--accent);font-size:13.5px;font-weight:700}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tabbar{border-color:rgba(255,255,255,.12);box-shadow:0 14px 40px -12px rgba(0,0,0,.7)}}
 @media (min-width:641px){.hp-icons{justify-content:flex-start;gap:28px}}
+
+/* ---------- Katalóg (nový dizajn) ---------- */
+.cat2{gap:14px}
+.cat2-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cat2-head h1{font-size:26px;font-weight:800;display:flex;align-items:baseline;gap:8px}
+.cat2-head h1 small{font:500 12px var(--font-mono),monospace;color:var(--muted);letter-spacing:0}
+.vtog{display:flex;padding:2px;border-radius:999px;background:var(--tile2)}
+.vtog button{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.vtog button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.qbar{display:flex;gap:6px;align-items:center;overflow-x:auto;margin:0 -20px;padding:0 20px 2px;scrollbar-width:none}
+.qbar::-webkit-scrollbar{display:none}
+.ibtn{position:relative;flex:none;width:36px;height:36px;border-radius:50%;background:var(--tile2);display:grid;place-items:center}
+.ibtn svg{width:18px;height:18px}
+.ibtn[data-on]{background:var(--accent-soft);color:var(--accent)}
+.ibtn i{position:absolute;right:-3px;top:-3px;min-width:17px;height:17px;border-radius:9px;background:var(--accent);color:#fff;font:700 10px/17px var(--font-mono),monospace;text-align:center;font-style:normal;border:2px solid var(--tile)}
+.qsep{flex:none;width:1px;height:22px;background:var(--line);margin:0 2px}
+.qchip{flex:none;height:36px;display:inline-flex;align-items:center;gap:5px;padding:0 13px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:inset 0 0 0 1.5px var(--line);white-space:nowrap}
+.qchip.on{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.qchip svg{width:12px;height:12px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:14px 10px}
+@media (min-width:641px){.cgrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:18px 14px}}
+.ccell{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ccell-img{position:relative;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:var(--tile2)}
+.ccell-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .25s}
+.ccell:hover .ccell-img img{transform:scale(1.03)}
+.ccell-img .sc{top:6px;left:6px;font-size:11px;padding:2px 6px}
+.ccell-img .pl{position:absolute;left:6px;bottom:6px}
+.ccell b{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ccell:hover b{color:var(--accent)}
+.ccell small{font-size:11.5px;color:var(--muted);margin-top:-3px}
+.clist{display:flex;flex-direction:column}
+.crow{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line)}
+.crow:first-child{border-top:0}
+.crow-main{flex:1;min-width:0;display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:7px 0}
+.crow-main>img,.crow-main>span:first-child{width:40px;height:60px;border-radius:8px;object-fit:cover;position:relative;overflow:hidden}
+.crow-main b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow-main:hover b{color:var(--accent)}
+.crow-main small{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px}
+.crow-main>b.mono{font-size:13.5px}
+.sheet-sm{width:min(420px,100%)}
+.sortlist{display:flex;flex-direction:column;padding:0 20px calc(18px + env(safe-area-inset-bottom,0px))}
+.sortlist button{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--line);font-size:15px;font-weight:500;text-align:left}
+.sortlist button:first-child{border-top:0}
+.sortlist button[aria-pressed="true"]{color:var(--accent);font-weight:700}
+.sortlist svg{width:18px;height:18px}
+/* jednoduchší panel filtrov: čipy s obrysom */
+.sheet .fchip{background:none;box-shadow:inset 0 0 0 1.5px var(--line);border:0}
+.sheet .fchip.on{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.sheet-body h3{font:700 14px var(--font-onest);text-transform:none;letter-spacing:0;color:var(--fg)}

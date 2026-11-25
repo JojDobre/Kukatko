@@ -38,6 +38,7 @@ const hu: Dict = {
     aria: "Értesítések: {name}", saveError: "Nem sikerült menteni. Próbáld újra.", pushOn: "Értesítések bekapcsolva", pushFail: "Nem sikerült bekapcsolni az értesítéseket",
   },
   catalog: {
+    grid: "Rács", list: "Lista", mine: "Szolgáltatóim", sortBy: "Rendezés", tvs: "Sorozatok", movies: "Filmek", recent: "2020+",
     title: "Katalógus", metaTitle: "Sorozatok és filmek katalógusa",
     metaDesc: "Streamingszolgáltatásokon elérhető sorozatok és filmek. Rendezés IMDb-, TMDB- vagy Rotten Tomatoes-értékelés, illetve a következő epizód szerint.",
     sort: "Rendezés", platforms: "Szolgáltatások", genre: "Műfaj", selected: "{n} kiválasztva", clear: "Kijelölés törlése",

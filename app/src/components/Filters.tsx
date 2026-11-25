@@ -3,11 +3,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { platformStyle } from "@/lib/platforms";
 import { useI18n } from "./I18n";
-import { Sliders, X } from "./icons";
+import { Check, Sliders, X } from "./icons";
 
 export type FilterState = {
   kind: "all" | "tv" | "movie"; sort: string; genre: string | null; year: number | null;
   runtime: "short" | "medium" | "long" | null; score: number | null; lang: string | null;
+  all: boolean; view: "grid" | "list";
 };
 
 type Props = {
@@ -22,41 +23,75 @@ type Props = {
 
 const DECADES = [2020, 2010, 2000, 1990, 1980, 1970];
 
-/** Katalóg: prepínač typu, tlačidlo „Filtre“ s panelom a aktívne filtre ako čipy. */
+const SortIcon = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4" />
+  </svg>
+);
+export const GridIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2" /><rect x="13" y="3" width="8" height="8" rx="2" /><rect x="3" y="13" width="8" height="8" rx="2" /><rect x="13" y="13" width="8" height="8" rx="2" /></svg>
+);
+export const ListIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+);
+
+/** URL katalógu pre daný stav (zdieľané s prepínačom zobrazenia). */
+export function catalogQuery(s: FilterState) {
+  const q = new URLSearchParams();
+  if (s.kind !== "all") q.set("kind", s.kind);
+  if (s.sort !== "score") q.set("sort", s.sort);
+  if (s.genre) q.set("genre", s.genre);
+  if (s.year) q.set("year", String(s.year));
+  if (s.runtime) q.set("runtime", s.runtime);
+  if (s.score) q.set("score", String(s.score));
+  if (s.lang) q.set("lang", s.lang);
+  if (s.all) q.set("all", "1");
+  if (s.view === "list") q.set("view", "list");
+  return q.size ? `?${q}` : "";
+}
+
+/** Prepínač mriežka / zoznam vedľa nadpisu katalógu. */
+export function ViewToggle({ state }: { state: FilterState }) {
+  const { d, href } = useI18n();
+  const router = useRouter();
+  const [, start] = useTransition();
+  const set = (view: "grid" | "list") => {
+    document.cookie = `catview=${view}; path=/; max-age=31536000; samesite=lax`;
+    start(() => router.push(`${href("/catalog")}${catalogQuery({ ...state, view })}`, { scroll: false }));
+  };
+  return (
+    <div className="vtog" role="group" aria-label={d.catalog.list}>
+      <button aria-pressed={state.view === "grid"} aria-label={d.catalog.grid} onClick={() => set("grid")}><GridIcon /></button>
+      <button aria-pressed={state.view === "list"} aria-label={d.catalog.list} onClick={() => set("list")}><ListIcon /></button>
+    </div>
+  );
+}
+
+/** Katalóg: jeden rad – ikony Zoradiť a Filtre, typ a rýchle filtre ako čipy. */
 export default function Filters({ state, sorts, providers, selected, region, genres, languages }: Props) {
   const { d, href, fmt, lang } = useI18n();
   const f = d.filters;
+  const c = d.catalog;
   const router = useRouter();
   const [, start] = useTransition();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<null | "filters" | "sort">(null);
   const [draft, setDraft] = useState(state);
   const [plats, setPlats] = useState(selected);
 
   useEffect(() => { setDraft(state); setPlats(selected); }, [JSON.stringify(state), selected.join(".")]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!open) return;
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(null); };
     document.addEventListener("keydown", esc);
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", esc); document.body.style.overflow = ""; };
   }, [open]);
 
   const langName = (code: string) => { try { return new Intl.DisplayNames([lang], { type: "language" }).of(code) ?? code; } catch { return code; } };
-  const sortLabel = (k: string) => (d.catalog.sorts as Record<string, string>)[k] ?? k;
+  const sortLabel = (k: string) => (c.sorts as Record<string, string>)[k] ?? k;
   const rt = (k: string) => (k === "movie" ? f.runtimeMovie : f.runtimeTv);
   const decadeLabel = (y: number) => (y === 1970 ? `< 1980` : `${y} – ${y + 9}`);
 
-  function url(s: FilterState) {
-    const q = new URLSearchParams();
-    if (s.kind !== "all") q.set("kind", s.kind);
-    if (s.sort !== "score") q.set("sort", s.sort);
-    if (s.genre) q.set("genre", s.genre);
-    if (s.year) q.set("year", String(s.year));
-    if (s.runtime) q.set("runtime", s.runtime);
-    if (s.score) q.set("score", String(s.score));
-    if (s.lang) q.set("lang", s.lang);
-    return `${href("/catalog")}${q.size ? "?" + q : ""}`;
-  }
   function savePlats(next: number[]) {
     // Platformy pamätáme v cookie (platia aj na domovskej stránke) a na serveri (upozornenia).
     document.cookie = `plats_${region}=${next.join(".")}; path=/; max-age=31536000; samesite=lax`;
@@ -64,59 +99,72 @@ export default function Filters({ state, sorts, providers, selected, region, gen
   }
   function go(s: FilterState, nextPlats = plats) {
     if (nextPlats.join(".") !== selected.join(".")) savePlats(nextPlats);
-    start(() => { router.push(url(s), { scroll: false }); router.refresh(); });
+    start(() => { router.push(`${href("/catalog")}${catalogQuery(s)}`, { scroll: false }); router.refresh(); });
   }
-  function apply() { setOpen(false); go(draft, plats); }
+  function apply() { setOpen(null); go({ ...draft, all: draft.all && plats.length > 0 ? draft.all : false }, plats); }
 
-  // Aktívne filtre zobrazené ako čipy (dajú sa zrušiť jedným ťuknutím).
-  const chips: { label: string; clear: () => void }[] = [];
-  if (state.sort !== "score") chips.push({ label: sortLabel(state.sort), clear: () => go({ ...state, sort: "score" }) });
-  for (const id of selected) {
-    const p = providers.find((x) => x.id === id);
-    if (p) chips.push({ label: p.name, clear: () => { const n = selected.filter((x) => x !== id); setPlats(n); go(state, n); } });
+  // Rýchle čipy: typ, moje platformy, hodnotenie, novinky a 3 najväčšie žánre.
+  const quickGenres = [...genres].sort((a, b) => b.count - a.count).slice(0, 3);
+  const quick: { label: string; on: boolean; toggle: () => void }[] = [
+    { label: c.tvs, on: state.kind === "tv", toggle: () => go({ ...state, kind: state.kind === "tv" ? "all" : "tv", genre: null, runtime: null }) },
+    { label: c.movies, on: state.kind === "movie", toggle: () => go({ ...state, kind: state.kind === "movie" ? "all" : "movie", genre: null, runtime: null, sort: state.sort === "next" ? "score" : state.sort }) },
+  ];
+  if (selected.length) quick.push({ label: c.mine, on: !state.all, toggle: () => go({ ...state, all: !state.all }) });
+  quick.push({ label: fmt(f.scoreMin, { n: 80 }), on: state.score === 80, toggle: () => go({ ...state, score: state.score === 80 ? null : 80 }) });
+  quick.push({ label: c.recent, on: state.year === 2020, toggle: () => go({ ...state, year: state.year === 2020 ? null : 2020 }) });
+  for (const g of quickGenres) {
+    const key = g.ids.join(".");
+    quick.push({ label: g.name, on: state.genre === key, toggle: () => go({ ...state, genre: state.genre === key ? null : key }) });
   }
-  if (state.genre) chips.push({ label: genres.find((g) => g.ids.join(".") === state.genre)?.name ?? f.any, clear: () => go({ ...state, genre: null }) });
-  if (state.year) chips.push({ label: decadeLabel(state.year), clear: () => go({ ...state, year: null }) });
-  if (state.runtime) chips.push({ label: rt(state.kind)[state.runtime], clear: () => go({ ...state, runtime: null }) });
-  if (state.score) chips.push({ label: fmt(f.scoreMin, { n: state.score }), clear: () => go({ ...state, score: null }) });
-  if (state.lang) chips.push({ label: langName(state.lang), clear: () => go({ ...state, lang: null }) });
-  const activeCount = chips.length;
+  // Ostatné aktívne filtre (z panelu), ktoré nie sú medzi rýchlymi čipmi – zrušia sa krížikom.
+  const extra: { label: string; clear: () => void }[] = [];
+  if (state.genre && !quickGenres.some((g) => g.ids.join(".") === state.genre)) extra.push({ label: genres.find((g) => g.ids.join(".") === state.genre)?.name ?? f.any, clear: () => go({ ...state, genre: null }) });
+  if (state.year && state.year !== 2020) extra.push({ label: decadeLabel(state.year), clear: () => go({ ...state, year: null }) });
+  if (state.score && state.score !== 80) extra.push({ label: fmt(f.scoreMin, { n: state.score }), clear: () => go({ ...state, score: null }) });
+  if (state.runtime) extra.push({ label: rt(state.kind)[state.runtime], clear: () => go({ ...state, runtime: null }) });
+  if (state.lang) extra.push({ label: langName(state.lang), clear: () => go({ ...state, lang: null }) });
+  const activeCount = [state.genre, state.year, state.runtime, state.score, state.lang].filter(Boolean).length + (selected.length && !state.all ? 1 : 0);
 
   const opt = <T,>(cur: T, val: T, label: React.ReactNode, set: (v: T) => void) => (
     <button key={String(val)} className={`fchip${cur === val ? " on" : ""}`} aria-pressed={cur === val} onClick={() => set(val)}>{label}</button>
   );
-  const kinds = [["all", d.common.everything], ["tv", d.common.tvs], ["movie", d.common.movies]] as const;
 
   return (
     <>
-      <div className="fbar">
-        <div className="seg" role="group" aria-label={f.kind}>
-          {kinds.map(([k, l]) => (
-            <button key={k} aria-pressed={state.kind === k}
-              onClick={() => go({ ...state, kind: k, genre: null, runtime: null, sort: k !== "tv" && state.sort === "next" ? "score" : state.sort })}>{l}</button>
-          ))}
-        </div>
-        <button className={`fbtn${activeCount ? " on" : ""}`} onClick={() => setOpen(true)} aria-haspopup="dialog">
-          <Sliders />{f.button}{activeCount > 0 && <span className="fcount">{activeCount}</span>}
+      <div className="qbar">
+        <button className="ibtn" onClick={() => setOpen("sort")} aria-haspopup="dialog" aria-label={`${c.sort}: ${sortLabel(state.sort)}`}
+          data-on={state.sort !== "score" || undefined}><SortIcon /></button>
+        <button className="ibtn" onClick={() => setOpen("filters")} aria-haspopup="dialog" aria-label={f.button}>
+          <Sliders />{activeCount > 0 && <i>{activeCount}</i>}
         </button>
+        <span className="qsep" aria-hidden="true" />
+        {extra.map((x) => <button key={x.label} className="qchip on" onClick={x.clear}>{x.label}<X /></button>)}
+        {quick.map((q) => <button key={q.label} className={`qchip${q.on ? " on" : ""}`} aria-pressed={q.on} onClick={q.toggle}>{q.label}</button>)}
       </div>
-      {chips.length > 0 && (
-        <div className="fchips">
-          {chips.map((c) => <button key={c.label} className="achip" onClick={c.clear}>{c.label}<X /></button>)}
-          <button className="link" onClick={() => { setPlats([]); go({ kind: state.kind, sort: "score", genre: null, year: null, runtime: null, score: null, lang: null }, []); }}>{f.reset}</button>
+
+      {open === "sort" && (
+        <div className="sheet-wrap" role="dialog" aria-modal="true" aria-label={c.sortBy} onClick={(e) => { if (e.target === e.currentTarget) setOpen(null); }}>
+          <div className="sheet sheet-sm">
+            <div className="sheet-head"><h2>{c.sortBy}</h2><button className="round sm" onClick={() => setOpen(null)} aria-label={d.common.close}><X /></button></div>
+            <div className="sortlist">
+              {sorts.filter((k) => !(state.kind !== "tv" && k === "next")).map((k) => (
+                <button key={k} aria-pressed={state.sort === k} onClick={() => { setOpen(null); go({ ...state, sort: k }); }}>
+                  {sortLabel(k)}{state.sort === k && <Check />}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      {open && (
-        <div className="sheet-wrap" role="dialog" aria-modal="true" aria-label={f.title} onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
+      {open === "filters" && (
+        <div className="sheet-wrap" role="dialog" aria-modal="true" aria-label={f.title} onClick={(e) => { if (e.target === e.currentTarget) setOpen(null); }}>
           <div className="sheet">
             <div className="sheet-head">
-              <h2>{f.title}</h2>
-              <button className="round sm" onClick={() => setOpen(false)} aria-label={d.common.close}><X /></button>
+              <h2>{f.button}</h2>
+              <button className="round sm" onClick={() => setOpen(null)} aria-label={d.common.close}><X /></button>
             </div>
             <div className="sheet-body">
-              <section><h3>{d.catalog.sort}</h3>
-                <div className="fopts">{sorts.filter((k) => !(draft.kind !== "tv" && k === "next")).map((k) => opt(draft.sort, k, sortLabel(k), (v) => setDraft({ ...draft, sort: v })))}</div></section>
               <section><h3>{d.catalog.platforms}</h3>
                 <div className="fopts">
                   {providers.map((p) => {
@@ -148,7 +196,7 @@ export default function Filters({ state, sorts, providers, selected, region, gen
               )}
             </div>
             <div className="sheet-foot">
-              <button className="btn soft" onClick={() => { setPlats([]); setDraft({ kind: draft.kind, sort: "score", genre: null, year: null, runtime: null, score: null, lang: null }); }}>{f.reset}</button>
+              <button className="btn soft" onClick={() => { setPlats([]); setDraft({ ...draft, genre: null, year: null, runtime: null, score: null, lang: null }); }}>{f.reset}</button>
               <button className="btn" onClick={apply}>{f.show}</button>
             </div>
           </div>

@@ -38,6 +38,7 @@ const cs: Dict = {
     aria: "Upozornění: {name}", saveError: "Nepodařilo se uložit. Zkus to znovu.", pushOn: "Upozornění zapnuta", pushFail: "Upozornění se nepodařilo zapnout",
   },
   catalog: {
+    grid: "Mřížka", list: "Seznam", mine: "Moje platformy", sortBy: "Řadit podle", tvs: "Seriály", movies: "Filmy", recent: "2020+",
     title: "Katalog", metaTitle: "Katalog seriálů a filmů",
     metaDesc: "Seriály a filmy dostupné na streamovacích službách. Seřaď podle hodnocení IMDb, TMDB, Rotten Tomatoes nebo podle nejbližšího dílu.",
     sort: "Seřadit", platforms: "Platformy", genre: "Žánr", selected: "{n} vybrané", clear: "Zrušit výběr",
