@@ -14,12 +14,12 @@ const kindCond = (k: KindOpt) => (k === "all" ? sql`` : sql`AND t.kind = ${k}`);
 
 const cols = (c: Ctx) => sql`${card(c)}, a.id AS airing_id, a.starts_at, a.ends_at, a.season, a.episode, a.sub_title,
   ch.name AS channel, ch.icon AS channel_icon`;
-const from = sql`FROM tv_airings a JOIN titles t ON t.id = a.title_id JOIN tv_channels ch ON ch.region = a.region AND ch.id = a.channel_id`;
+const from = () => sql`FROM tv_airings a JOIN titles t ON t.id = a.title_id JOIN tv_channels ch ON ch.region = a.region AND ch.id = a.channel_id`;
 
 /** Celý TV deň (0 = dnes) pre krajinu: podľa času alebo podľa hodnotenia. */
 export function tvDay(c: Ctx, offset: number, kind: KindOpt, sort: "score" | "time", limit = 400) {
   const tz = regionTz(c.region);
-  return sql<TvRow[]>`SELECT ${cols(c)} ${from}
+  return sql<TvRow[]>`SELECT ${cols(c)} ${from()}
     WHERE a.region = ${c.region} AND ${tvDate(sql`a.starts_at`, tz)} = ${tvDate(sql`now()`, tz)} + ${offset}::int ${kindCond(kind)}
     ORDER BY ${sort === "score" ? sql`t.score DESC NULLS LAST, a.starts_at` : sql`a.starts_at, t.score DESC NULLS LAST`} LIMIT ${limit}`;
 }
@@ -29,7 +29,7 @@ export function tvBestToday(c: Ctx, kind: KindOpt, limit = 6) {
   const tz = regionTz(c.region);
   return cached(`tvbest:${c.lang}:${c.region}:${kind}:${limit}`, 300, () => sql<TvRow[]>`
     SELECT * FROM (
-      SELECT DISTINCT ON (t.id) ${cols(c)} ${from}
+      SELECT DISTINCT ON (t.id) ${cols(c)} ${from()}
       WHERE a.region = ${c.region} AND coalesce(a.ends_at, a.starts_at + interval '90 minutes') > now()
         AND ${tvDate(sql`a.starts_at`, tz)} = ${tvDate(sql`now()`, tz)} AND t.score IS NOT NULL ${kindCond(kind)}
       ORDER BY t.id, a.starts_at

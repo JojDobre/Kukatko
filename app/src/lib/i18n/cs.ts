@@ -23,6 +23,7 @@ const cs: Dict = {
     availability: "Dostupnost na platformách", about: "O webu a soukromí", privacy: "Nastavení soukromí",
   },
   home: {
+    cont: "Pokračuj ve sledování", next: "Dál", seasonProg: "{n}. řada · {d}/{t}", all: "Vše", myPlats: "Moje platformy", myPlatsSub: "Ťukni na platformu a uvidíš její novinky", allPlats: "Všechny", newOn: "Nové na {p}", noNewOn: "Tento týden tu nic nového nepřibylo.", edit: "Upravit", calendar: "Kalendář", topTitle: "Nejlépe hodnocené", chart: "Žebříček", tvTip: "Tip na dnešní večer v TV", pickTitle: "Nevím, co sledovat", pickSub: "Vybereme 3 tipy z tvých platforem", pickCta: "Vyber za mě", watched: "Viděno",
     nextPremiere: "Nejbližší premiéra", topRated: "Nejlépe hodnocené", thisWeek: "Tento týden",
     nothingThisWeek: "Na tvých platformách tento týden nic nového nevychází.", watching: "Sleduji",
     bestRated: "Nejlépe hodnocený", releaseDate: "datum vydání", releasesToday: "vychází", todayBig: "Dnes",

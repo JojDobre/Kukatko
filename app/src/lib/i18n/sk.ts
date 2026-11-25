@@ -22,6 +22,7 @@ const sk = {
     availability: "Dostupnosť na platformách", about: "O stránke a súkromie", privacy: "Nastavenia súkromia",
   },
   home: {
+    cont: "Pokračuj v pozeraní", next: "Ďalej", seasonProg: "{n}. séria · {d}/{t}", all: "Všetko", myPlats: "Moje platformy", myPlatsSub: "Ťukni na platformu a uvidíš jej novinky", allPlats: "Všetky", newOn: "Nové na {p}", noNewOn: "Tento týždeň tu nič nové nepribudlo.", edit: "Upraviť", calendar: "Kalendár", topTitle: "Najlepšie hodnotené", chart: "Rebríček", tvTip: "Tip na dnešný večer v TV", pickTitle: "Neviem, čo pozrieť", pickSub: "Vyberieme 3 tipy z tvojich platforiem", pickCta: "Vyber za mňa", watched: "Pozreté",
     nextPremiere: "Najbližšia premiéra", topRated: "Najlepšie hodnotené", thisWeek: "Tento týždeň",
     nothingThisWeek: "Na tvojich platformách tento týždeň nič nové nevychádza.", watching: "Sledujem",
     bestRated: "Najlepšie hodnotený", releaseDate: "dátum vydania", releasesToday: "vychádza", todayBig: "Dnes",

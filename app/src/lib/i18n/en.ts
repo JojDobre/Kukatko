@@ -23,6 +23,7 @@ const en: Dict = {
     availability: "Streaming availability", about: "About and privacy", privacy: "Privacy settings",
   },
   home: {
+    cont: "Continue watching", next: "Next", seasonProg: "Season {n} · {d}/{t}", all: "All", myPlats: "My services", myPlatsSub: "Tap a service to see what's new", allPlats: "All", newOn: "New on {p}", noNewOn: "Nothing new here this week.", edit: "Edit", calendar: "Calendar", topTitle: "Top rated", chart: "Chart", tvTip: "Tonight's TV pick", pickTitle: "Can't decide what to watch", pickSub: "We'll pick 3 titles from your services", pickCta: "Pick for me", watched: "Watched",
     nextPremiere: "Next premiere", topRated: "Top rated", thisWeek: "This week",
     nothingThisWeek: "Nothing new is coming out on your services this week.", watching: "Watchlist",
     bestRated: "Top rated", releaseDate: "release date", releasesToday: "out today", todayBig: "Today",

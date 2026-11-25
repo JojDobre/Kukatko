@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Bell, Calendar, Chart, Grid, List, Search, Tv, User } from "./icons";
 import { useI18n } from "./I18n";
 import LangSwitch from "./LangSwitch";
+import { DEFAULT_LANG } from "@/lib/locales";
 
 function useItems(tv = false) {
   const { d, href } = useI18n();
@@ -18,7 +19,12 @@ function useItems(tv = false) {
   ];
 }
 
-const isActive = (path: string, h: string, home: string) => (h === home ? path === home : path.startsWith(h));
+// Proxy prepisuje adresy bez predpony na /sk/…, preto porovnávame bez predvoleného jazyka.
+const norm = (p: string) => p.replace(new RegExp(`^/${DEFAULT_LANG}(?=/|$)`), "") || "/";
+const isActive = (path: string, h: string, home: string) => {
+  const p = norm(path), x = norm(h), hm = norm(home);
+  return x === hm ? p === hm : p === x || p.startsWith(x + "/");
+};
 
 export function TopNav({ badge, tv }: { badge: number; tv: boolean }) {
   const path = usePathname();
@@ -44,7 +50,7 @@ export function TabBar() {
   const items = useItems();
   return (
     <nav className="tabbar" aria-label="Menu">
-      {items.filter((i) => !i.desktopOnly).map((i) => <Link key={i.key} href={i.href} aria-current={isActive(path, i.href, items[0].href) ? "page" : undefined}>{i.icon}{i.label}</Link>)}
+      {items.filter((i) => !i.desktopOnly).map((i) => <Link key={i.key} href={i.href} aria-label={i.label} aria-current={isActive(path, i.href, items[0].href) ? "page" : undefined}>{i.icon}<span>{i.label}</span></Link>)}
     </nav>
   );
 }

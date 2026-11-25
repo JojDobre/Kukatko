@@ -23,6 +23,7 @@ const de: Dict = {
     availability: "Streaming-Verfügbarkeit", about: "Über uns und Datenschutz", privacy: "Datenschutzeinstellungen",
   },
   home: {
+    cont: "Weiterschauen", next: "Als Nächstes", seasonProg: "Staffel {n} · {d}/{t}", all: "Alle", myPlats: "Meine Dienste", myPlatsSub: "Tippe auf einen Dienst für Neuheiten", allPlats: "Alle", newOn: "Neu bei {p}", noNewOn: "Diese Woche nichts Neues.", edit: "Bearbeiten", calendar: "Kalender", topTitle: "Am besten bewertet", chart: "Rangliste", tvTip: "TV-Tipp für heute Abend", pickTitle: "Ich weiß nicht, was ich schauen soll", pickSub: "Wir wählen 3 Tipps aus deinen Diensten", pickCta: "Wähl für mich", watched: "Gesehen",
     nextPremiere: "Nächste Premiere", topRated: "Am besten bewertet", thisWeek: "Diese Woche",
     nothingThisWeek: "Diese Woche erscheint auf deinen Diensten nichts Neues.", watching: "Merkliste",
     bestRated: "Am besten bewertet", releaseDate: "Erscheinungsdatum", releasesToday: "erscheint", todayBig: "Heute",

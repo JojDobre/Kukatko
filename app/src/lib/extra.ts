@@ -1,5 +1,6 @@
 import { sql } from "./db";
 import type { Lang } from "./locales";
+import { card, type Card, type Ctx } from "./queries";
 
 /** Skóre epizódy v %: užívatelia (od 3 hodnotení), inak TMDB (od 5 hlasov). */
 export const episodeScore = () => sql`round(CASE WHEN e.user_count >= 3 THEN e.user_avg * 10 WHEN e.tmdb_votes >= 5 THEN e.tmdb_rating * 10 END)::int`;
@@ -89,4 +90,41 @@ export function sitemapEpisodes(lang: string, limit: number) {
     FROM episodes e JOIN titles t ON t.id = e.title_id
     WHERE e.season > 0 AND e.air_date <= current_date AND cardinality(t.regions) > 0
     ORDER BY t.popularity DESC, e.season, e.episode LIMIT ${limit}`;
+}
+
+export type ContinueRow = Card & { next_season: number; next_episode: number; next_name: string | null; season_total: number; season_watched: number };
+
+/** Domov – „Pokračuj v pozeraní“: rozpozerané seriály, naposledy pozerané prvé, s priebehom aktuálnej série. */
+export async function continueWatching(c: Ctx, deviceId: string, today: string, limit = 3) {
+  return sql<ContinueRow[]>`
+    WITH prog AS (
+      SELECT e.title_id,
+        (array_agg(e.season ORDER BY e.season, e.episode) FILTER (WHERE w.device_id IS NULL))[1] AS ns,
+        (array_agg(e.episode ORDER BY e.season, e.episode) FILTER (WHERE w.device_id IS NULL))[1] AS ne,
+        (array_agg(coalesce(e.names->>${c.lang}, e.names->>'en') ORDER BY e.season, e.episode) FILTER (WHERE w.device_id IS NULL))[1] AS nn,
+        max(w.created_at) AS last
+      FROM episodes e
+      LEFT JOIN watched w ON w.device_id = ${deviceId} AND w.title_id = e.title_id AND w.season = e.season AND w.episode = e.episode
+      WHERE e.season > 0 AND e.air_date <= ${today}
+        AND e.title_id IN (SELECT DISTINCT title_id FROM watched WHERE device_id = ${deviceId} AND season > 0)
+      GROUP BY e.title_id
+      HAVING count(*) FILTER (WHERE w.device_id IS NOT NULL) > 0 AND count(*) FILTER (WHERE w.device_id IS NULL) > 0
+    )
+    SELECT ${card(c)}, p.ns AS next_season, p.ne AS next_episode, p.nn AS next_name,
+      (SELECT count(*) FROM episodes x WHERE x.title_id = p.title_id AND x.season = p.ns)::int AS season_total,
+      (SELECT count(*) FROM watched x WHERE x.device_id = ${deviceId} AND x.title_id = p.title_id AND x.season = p.ns)::int AS season_watched
+    FROM prog p JOIN titles t ON t.id = p.title_id
+    WHERE t.id NOT IN (SELECT title_id FROM hidden WHERE device_id = ${deviceId})
+    ORDER BY p.last DESC NULLS LAST LIMIT ${limit}`;
+}
+
+/** Počet novinok za posledných 7 dní pre každú platformu v regióne. */
+export async function newCounts(region: string, providerIds: number[]) {
+  if (!providerIds.length) return {} as Record<number, number>;
+  const rows = await sql<{ provider_id: number; n: number }[]>`
+    SELECT provider_id, count(DISTINCT title_id)::int AS n FROM availability
+    WHERE region = ${region} AND NOT initial AND removed_at IS NULL AND first_seen > now() - interval '7 days'
+      AND provider_id = ANY(${providerIds}::int[])
+    GROUP BY 1`;
+  return Object.fromEntries(rows.map((r) => [r.provider_id, r.n])) as Record<number, number>;
 }

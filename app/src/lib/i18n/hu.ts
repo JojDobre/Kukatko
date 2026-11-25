@@ -23,6 +23,7 @@ const hu: Dict = {
     availability: "Elérhetőség a szolgáltatásokon", about: "Az oldalról és adatvédelem", privacy: "Adatvédelmi beállítások",
   },
   home: {
+    cont: "Folytasd a nézést", next: "Következő", seasonProg: "{n}. évad · {d}/{t}", all: "Összes", myPlats: "Szolgáltatóim", myPlatsSub: "Koppints egy szolgáltatóra az újdonságokért", allPlats: "Összes", newOn: "Új: {p}", noNewOn: "Ezen a héten nincs újdonság.", edit: "Szerkesztés", calendar: "Naptár", topTitle: "Legjobbra értékelt", chart: "Toplista", tvTip: "Mai esti TV-tipp", pickTitle: "Nem tudom, mit nézzek", pickSub: "3 tippet választunk a szolgáltatóidból", pickCta: "Válassz helyettem", watched: "Megnézve",
     nextPremiere: "Következő premier", topRated: "Legjobbra értékelt", thisWeek: "Ezen a héten",
     nothingThisWeek: "Ezen a héten nem jelenik meg semmi új a szolgáltatásaidon.", watching: "Követem",
     bestRated: "Legjobbra értékelt", releaseDate: "megjelenés", releasesToday: "megjelenik", todayBig: "Ma",

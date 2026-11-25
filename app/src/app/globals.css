@@ -425,6 +425,7 @@ details>summary::-webkit-details-marker{display:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
 .tabbar{display:none}
+:root[data-theme="dark"] .tabbar{border-color:rgba(255,255,255,.12)}
 
 @media (max-width:920px){
   .qlinks{grid-template-columns:1fr 1fr;grid-column:span 2}
@@ -434,10 +435,13 @@ details>summary::-webkit-details-marker{display:none}
 @media (max-width:640px){
   .nav{display:none}
   .app{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 96px)}
-  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--tile) 92%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));justify-content:space-around}
-  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);padding:4px 10px}
-  .tabbar svg{width:22px;height:22px}
-  .tabbar a[aria-current="page"]{color:var(--accent)}
+  .app{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 116px)}
+  .tabbar{display:flex;position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;height:64px;border-radius:32px;align-items:center;justify-content:space-between;padding:0 8px;background:color-mix(in srgb,var(--tile) 72%,transparent);border:1px solid color-mix(in srgb,#fff 85%,transparent);backdrop-filter:blur(22px) saturate(1.8);-webkit-backdrop-filter:blur(22px) saturate(1.8);box-shadow:0 14px 40px -12px rgba(0,0,0,.3)}
+  .tabbar a{height:48px;min-width:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;gap:7px;color:var(--muted);font-size:14px;font-weight:700;transition:background .25s,color .25s,padding .25s}
+  .tabbar a span{display:none}
+  .tabbar a[aria-current="page"]{padding:0 16px 0 13px;background:var(--accent);color:#fff}
+  .tabbar a[aria-current="page"] span{display:inline}
+  .tabbar svg{width:22px;height:22px;flex:none}
   .toast{bottom:calc(env(safe-area-inset-bottom,0px) + 90px)}
   .feature{min-height:360px}
   .posters{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -505,3 +509,104 @@ details>summary::-webkit-details-marker{display:none}
 .tvon{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line)}
 .tvon div{display:flex;justify-content:space-between;gap:10px;font-size:14px}
 .tvon .mono{color:var(--muted);font-size:13px}
+
+/* ---------- Domov (nový dizajn) ---------- */
+.sh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sh h2{font-size:22px;font-weight:800}
+.sh.sm b{font-size:16px}
+.slink{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:var(--accent);white-space:nowrap}
+.slink svg{width:16px;height:16px}
+.shw{display:flex;flex-direction:column;gap:2px}
+.ssub{color:var(--muted);font-size:13.5px}
+.fg{color:var(--fg)}
+.btn.wide{width:100%}
+/* Pokračuj v pozeraní */
+.cw{gap:14px}
+.cw-main{display:flex;gap:14px}
+.cw-poster{width:92px;height:138px;border-radius:12px;overflow:hidden;position:relative;flex:none}
+.cw-poster img,.cw-poster>span{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cw-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.cw-info>span{font-size:13px}
+.cw-t{font-size:18px;font-weight:700;line-height:1.2}
+.cw-t:hover{color:var(--accent)}
+.cw-dots{display:flex;gap:3px}
+.cw-dots i{flex:1;height:6px;border-radius:3px;background:var(--tile2)}
+.cw-dots i.on{background:var(--accent)}
+.cw-dots i.nx{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.cw-bar{display:block;height:6px;border-radius:3px;background:var(--tile2)}
+.cw-bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.cw-info small{font-size:11.5px}
+.cw-info .btn{margin-top:auto;padding:9px 12px}
+.cw-more{display:flex;gap:8px}
+.cw-mini{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:6px;border-radius:12px;background:var(--tile2)}
+.cw-mini>img,.cw-mini>span:first-child{width:26px;height:39px;border-radius:5px;object-fit:cover;flex:none;position:relative;overflow:hidden}
+.cw-mini b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw-mini>span:last-child{min-width:0}
+/* Tento týždeň */
+.wk{gap:6px}
+.wk-list{display:flex;flex-direction:column}
+.wk-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:12px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.wk-row:first-child{border-top:0}
+.wk-row>img,.wk-row>span:first-child{width:32px;height:48px;border-radius:6px;object-fit:cover;position:relative;overflow:hidden}
+.wk-row b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-row:hover b{color:var(--accent)}
+.wk-row small{color:var(--muted);font-size:12px}
+/* Moje platformy + novinky */
+.hp{gap:14px}
+.hp-icons{display:flex;justify-content:space-between;padding:8px 2px 0}
+.hp-icon{width:60px;flex:none;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
+.hp-icon small{font-size:11.5px;font-weight:600;line-height:1.15}
+.hp-logo{position:relative;width:48px;height:48px;border-radius:15px;display:grid;place-items:center}
+.hp-logo img,.hp-logo>span{width:48px;height:48px;border-radius:15px;object-fit:cover;display:grid;place-items:center;color:#fff;font:800 12px var(--font-onest)}
+.hp-icon[aria-selected="true"] .hp-logo{box-shadow:0 0 0 3px var(--tile),0 0 0 5px var(--accent)}
+.hp-icon[aria-selected="true"] small{color:var(--accent);font-weight:700}
+.hp-badge{position:absolute;right:-6px;top:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--accent);color:#fff;font:700 11px/20px var(--font-mono),monospace;text-align:center;font-style:normal;border:2px solid var(--tile)}
+.hp-add{border:1.5px dashed var(--line);color:var(--muted);font-size:22px}
+.hp-sep{height:1px;background:var(--line)}
+.prow-sm{display:flex;gap:10px;overflow-x:auto;margin:0 -20px;padding:0 20px;scrollbar-width:none;scroll-snap-type:x mandatory}
+.psm{width:80px;flex:none;display:flex;flex-direction:column;gap:4px;scroll-snap-align:start}
+.psm-img{position:relative;width:80px;height:120px;border-radius:12px;overflow:hidden;background:var(--tile2)}
+.psm-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.psm-img .sc{top:6px;left:6px;font-size:11px;padding:2px 6px}
+.psm b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.psm small{font-size:11.5px;margin-top:-3px}
+/* Tip na večer v TV */
+.tvt{padding:0;gap:0;overflow:hidden}
+.tvt-hero{position:relative;height:210px;display:block;color:#fff;overflow:hidden}
+.tvt-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tvt-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.8))}
+.tvt-hero .lbl{position:absolute;top:16px;left:18px;color:rgba(255,255,255,.85)}
+.tvt-foot{position:absolute;left:18px;right:18px;bottom:16px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.tvt-foot b{display:block;font-size:24px;letter-spacing:-.02em;line-height:1.1}
+.tvt-foot small{font-size:13px;opacity:.9}
+.tvt-time{display:flex;flex-direction:column;align-items:center;padding:7px 12px;border-radius:14px;background:var(--accent);flex:none}
+.tvt-time b{font-size:18px}
+.tvt-time small{font-size:11px;font-weight:600;opacity:1}
+.tvt-list{padding:8px 18px 16px;display:flex;flex-direction:column}
+.tvt-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.tvt-row:first-child{border-top:0}
+.tvt-row>b{font-size:14px}
+.tvt-row span b{display:block;font-size:15px}
+.tvt-row span small{color:var(--muted);font-size:12.5px}
+.tvt-row>span:last-child{font-weight:700;font-size:13.5px}
+.tvt-all{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;height:42px;border-radius:12px;background:var(--tile2);font-size:14px;font-weight:700}
+.tvt-all svg{width:16px;height:16px}
+/* Top 10 */
+.t10{gap:14px}
+.t10 .seg{align-self:flex-start}
+.t10-row{list-style:none;margin:0 -20px;padding:0 20px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.t10-row a{display:flex;align-items:flex-end}
+.t10-n{font-size:118px;line-height:.78;font-weight:800;letter-spacing:-.08em;color:transparent;-webkit-text-stroke:2.5px color-mix(in srgb,var(--muted) 55%,transparent);margin-right:-8px}
+.t10-img{position:relative;width:96px;height:144px;border-radius:12px;overflow:hidden;flex:none;background:var(--tile2)}
+.t10-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.t10-img .sc{top:6px;left:6px;font-size:11px;padding:2px 6px}
+/* Čo dnes pozrieť */
+.pfan{flex-direction:row;align-items:center;gap:16px;background:linear-gradient(135deg,var(--accent),#E0452E);color:#fff;padding:18px}
+.pfan-img{position:relative;width:132px;height:118px;flex:none}
+.pfan-img img{position:absolute;width:70px;height:105px;object-fit:cover;border-radius:10px;box-shadow:0 8px 18px -6px rgba(0,0,0,.5);border:2px solid #fff}
+.pfan-text{display:flex;flex-direction:column;gap:8px}
+.pfan-text b{font-size:19px;line-height:1.15}
+.pfan-text small{font-size:13px;opacity:.9}
+.pfan-btn{align-self:flex-start;padding:8px 14px;border-radius:999px;background:#fff;color:var(--accent);font-size:13.5px;font-weight:700}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tabbar{border-color:rgba(255,255,255,.12);box-shadow:0 14px 40px -12px rgba(0,0,0,.7)}}
+@media (min-width:641px){.hp-icons{justify-content:flex-start;gap:28px}}
