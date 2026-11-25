@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ChartsView from "@/components/ChartsView";
+import ChartDetail, { type ChartParams } from "@/components/charts/ChartDetail";
 import { chartTitle, parseChartKey } from "@/lib/charts";
 import { page } from "@/lib/page";
 import { alternates } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
-type P = { params: Promise<{ lang: string; key: string }>; searchParams: Promise<{ p?: string }> };
-const ids = (p?: string) => (p ?? "").split(".").map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 20);
+type P = { params: Promise<{ lang: string; key: string }>; searchParams: Promise<ChartParams> };
 
 async function load(params: P["params"]) {
   const base = await page(params);
@@ -23,11 +22,11 @@ export async function generateMetadata({ params, searchParams }: P): Promise<Met
   return {
     title, description: `${title}. ${d.charts.intro} ${SITE}.`,
     alternates: alternates(lang, () => `/charts/${key}`),
-    robots: (await searchParams).p ? { index: false, follow: true } : undefined,
+    robots: Object.keys(await searchParams).length ? { index: false, follow: true } : undefined,
   };
 }
 
 export default async function Chart({ params, searchParams }: P) {
-  const { lang, ctx, sel } = await load(params);
-  return <ChartsView lang={lang} ctx={ctx} sel={sel} plats={ids((await searchParams).p)} />;
+  const { lang, ctx, sel, key } = await load(params);
+  return <ChartDetail lang={lang} ctx={ctx} sel={sel} sp={await searchParams} keyPath={key} />;
 }

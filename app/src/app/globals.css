@@ -659,3 +659,61 @@ details>summary::-webkit-details-marker{display:none}
 .sheet .fchip{background:none;box-shadow:inset 0 0 0 1.5px var(--line);border:0}
 .sheet .fchip.on{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .sheet-body h3{font:700 14px var(--font-onest);text-transform:none;letter-spacing:0;color:var(--fg)}
+
+/* ---------- Rebríčky (nový dizajn) ---------- */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.fb{position:absolute;inset:0}
+.chhero{position:relative;padding:0;height:240px;overflow:hidden;color:#fff;display:block}
+.chhero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.chhero .lbl{position:absolute;top:16px;left:18px;color:rgba(255,255,255,.85)}
+.chbadge{position:absolute;right:16px;top:13px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:12px;font-weight:700}
+.chname{display:flex;align-items:center;gap:10px;min-width:0}
+.chname h2{font-size:20px}
+.chic{width:30px;height:30px;border-radius:10px;color:#fff;display:grid;place-items:center;flex:none}
+.chic svg{width:17px;height:17px}
+.chrow{gap:12px}
+.t10-img.sm{width:80px;height:120px}
+.chrow .t10-n{font-size:92px}
+.chgrid{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (min-width:921px){.chgrid{grid-template-columns:repeat(4,1fr)}}
+.chtile{position:relative;padding:14px;min-height:196px;gap:4px;justify-content:flex-start}
+.chtile>b{font-size:15px;line-height:1.2;margin-top:6px}
+.chtile>small{font-size:12px}
+.ch1{font-weight:700;color:var(--fg)!important}
+.ch1 span{color:var(--accent)}
+.chfan span{position:absolute;bottom:12px;width:46px;height:69px;border-radius:8px;overflow:hidden;border:2px solid var(--tile);box-shadow:0 6px 14px -6px rgba(0,0,0,.5)}
+.chfan img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.chfan .lg{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff;font:800 10px var(--font-onest)}
+/* detail rebríčka */
+.chdet{gap:12px}
+.chback{font-size:14px;font-weight:700;color:var(--muted)}
+.chtitle{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.chtitle h1{font-size:26px;font-weight:800;line-height:1.1}
+.chtitle small{display:block;font-size:12.5px;margin-top:3px}
+.plogos{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.plogo{width:36px;height:36px;border-radius:11px;overflow:hidden;flex:none;display:grid;place-items:center}
+.plogo img,.plogo>span{width:100%;height:100%;object-fit:cover;display:grid;place-items:center;color:#fff;font:800 10px var(--font-onest)}
+.plogo[aria-pressed="true"]{box-shadow:0 0 0 2px var(--tile),0 0 0 4px var(--accent)}
+.plogo:disabled{box-shadow:0 0 0 2px var(--tile),0 0 0 4px var(--accent);cursor:default}
+.rk-list{display:flex;flex-direction:column}
+.rk{display:grid;grid-template-columns:auto 40px minmax(0,1fr) auto;gap:11px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.rk:first-child,.rk-group h3+.rk{border-top:0}
+.rk:not(:has(.rk-n)){grid-template-columns:40px minmax(0,1fr) auto}
+.rk-n{width:28px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.rk-n b{font-size:14px;color:var(--muted)}
+.rk-n b.top{font-size:17px;color:var(--accent)}
+.rk-img{width:40px;height:60px;border-radius:8px;object-fit:cover;position:relative;overflow:hidden;display:block}
+.rk-t{min-width:0}
+.rk-t b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk:hover .rk-t b{color:var(--accent)}
+.rk-t small{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px}
+.rk-t .up{color:var(--good)}
+.rk>b.mono{font-size:14px}
+.mv{font:700 11px var(--font-mono),monospace;color:var(--muted)}
+.mv.up{color:var(--good)}
+.mv.down{color:var(--low)}
+.mv.new{font:800 9.5px var(--font-onest);color:#fff;background:var(--good);padding:1px 4px;border-radius:4px}
+.rk-group h3{font-size:13px;font-weight:700;color:var(--muted);padding:10px 0 4px}
+.chtile{min-height:214px}
+.ch1{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chfan span{width:40px;height:60px}

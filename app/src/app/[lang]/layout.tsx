@@ -71,7 +71,7 @@ export default async function LangLayout({ children, params }: P & { children: R
   const adsense = !premium ? process.env.ADSENSE_CLIENT : undefined;
   const umami = process.env.UMAMI_SCRIPT_URL && process.env.UMAMI_WEBSITE_ID;
   // Do prehliadača posielame len texty, ktoré používajú klientské komponenty.
-  const { about: _a, notify: _n, meta: _m, person: _p, charts: _c, notFound: _nf, ...clientD } = d;
+  const { about: _a, notify: _n, meta: _m, person: _p, notFound: _nf, ...clientD } = d;
   const i18n = { lang, d: clientD as typeof d, defaultLang: DEFAULT_LANG, langs: LANGS.map((code: Lang) => ({ code, name: ALL_LOCALES[code].name })) };
 
   return (

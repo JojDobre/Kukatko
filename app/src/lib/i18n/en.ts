@@ -105,6 +105,7 @@ const en: Dict = {
     thanks: "Thanks for your support! Premium is active.", error: "Couldn't start the payment. Please try later.",
   },
   charts: {
+    trendTop: "Biggest trend right now", daysTop: "Day {n} at the top", weeksTop: "Week {n} at the top", interest: "{p} interest", newBadge: "NEW", share: "Share", copied: "Link copied", filtersTitle: "Chart filters", genre: "Genre", anyGenre: "All", period: "Period", periodAll: "All time", periodYear: "Year {y}", period5: "Last 5 years", size: "Chart length", show: "Show", reset: "Reset", back: "Charts", all: "All", platformsAllShort: "All", byPlatformSub: "Top 10 of every service", thisWeekSub: "New episodes within 7 days", newSub: "Added in the last 30 days", leavingSub: "Removed in the last 30 days", subBest: "By the average of ratings from all sources", subTrend: "What gained the most interest in the last 7 days", subWeek: "Episodes coming out within 7 days", subNew: "What was added to services in the last 30 days", subLeaving: "What left services in the last 30 days", moveNote: "Arrows show the change since last week.", today: "Today", thisWeekGroup: "This week", earlier: "Earlier", tvs: "Series", movies: "Movies",
     bestAll: "Best overall", trending: "Trending now", bestOn: "Best on {p}", choose: "Chart", platformsAll: "All services", subtitleOn: "on: {p}",
     title: "Charts", metaDesc: "New on Netflix, Disney+, Prime Video and more, the best series and films, and what's out this week. Updated daily.",
     intro: "Charts update every day based on what arrived on or left each service.",

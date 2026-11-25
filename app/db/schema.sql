@@ -342,3 +342,20 @@ CREATE TABLE IF NOT EXISTS tv_matches (
   checked_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (norm, year)
 );
+
+-- v6: história rebríčkov (pohyb v poradí) a popularity (trendy podľa rastu záujmu)
+CREATE TABLE IF NOT EXISTS chart_ranks (
+  region   text NOT NULL,
+  chart    text NOT NULL,
+  day      date NOT NULL,
+  title_id int  NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+  rank     int  NOT NULL,
+  PRIMARY KEY (region, chart, day, title_id)
+);
+CREATE INDEX IF NOT EXISTS chart_ranks_day_idx ON chart_ranks (region, chart, day, rank);
+CREATE TABLE IF NOT EXISTS title_pop (
+  day        date NOT NULL,
+  title_id   int  NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+  popularity real NOT NULL,
+  PRIMARY KEY (day, title_id)
+);
